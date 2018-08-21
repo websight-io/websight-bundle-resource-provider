@@ -157,8 +157,8 @@ public class BundleResourceProvider extends ResourceProvider<Object> {
     public Iterator<Resource> listChildren(final ResolveContext<Object> ctx, final Resource parent) {
      	if (parent instanceof BundleResource && ((BundleResource)parent).getBundle() == this.cache) {
             // bundle resources can handle this request directly when the parent
-    		    // resource is in the same bundle as this provider.
-            return ((BundleResource) parent).listChildren();
+    		// resource is in the same bundle as this provider.
+            return new BundleResourceIterator((BundleResource) parent);
       	}
 
         // ensure this provider may have children of the parent

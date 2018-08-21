@@ -202,13 +202,7 @@ public class BundleResourceProviderTest {
         Resource rsrc = provider.getResource(mock(ResolveContext.class), "/libs/foo", mock(ResourceContext.class), null);
         assertNotNull(rsrc);
 
-        List<String> rsrcChildren = getChildren(rsrc.listChildren());
-        assertEquals(3, rsrcChildren.size());
-        assertTrue(rsrcChildren.contains("/libs/foo/a"));
-        assertTrue(rsrcChildren.contains("/libs/foo/b"));
-        assertTrue(rsrcChildren.contains("/libs/foo/test"));
-
-        rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
+        List<String> rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
         assertEquals(3, rsrcChildren.size());
         assertTrue(rsrcChildren.contains("/libs/foo/a"));
         assertTrue(rsrcChildren.contains("/libs/foo/b"));
@@ -216,12 +210,6 @@ public class BundleResourceProviderTest {
 
         rsrc = provider.getResource(mock(ResolveContext.class), "/libs/foo/test", mock(ResourceContext.class), null);
         assertNotNull(rsrc);
-
-        rsrcChildren = getChildren(rsrc.listChildren());
-        assertEquals(3, rsrcChildren.size());
-        assertTrue(rsrcChildren.contains("/libs/foo/test/x"));
-        assertTrue(rsrcChildren.contains("/libs/foo/test/y"));
-        assertTrue(rsrcChildren.contains("/libs/foo/test/z"));
 
         rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
         assertEquals(3, rsrcChildren.size());
@@ -307,14 +295,7 @@ public class BundleResourceProviderTest {
         Resource rsrc = provider.getResource(mock(ResolveContext.class), "/libs/foo", mock(ResourceContext.class), null);
         assertNotNull(rsrc);
 
-        List<String> rsrcChildren = getChildren(rsrc.listChildren());
-        assertEquals(4, rsrcChildren.size());
-        assertTrue(rsrcChildren.contains("/libs/foo/a"));
-        assertTrue(rsrcChildren.contains("/libs/foo/b"));
-        assertTrue(rsrcChildren.contains("/libs/foo/d"));
-        assertTrue(rsrcChildren.contains("/libs/foo/test"));
-
-        rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
+        List<String> rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
         assertEquals(4, rsrcChildren.size());
         assertTrue(rsrcChildren.contains("/libs/foo/a"));
         assertTrue(rsrcChildren.contains("/libs/foo/b"));
@@ -323,12 +304,6 @@ public class BundleResourceProviderTest {
 
         rsrc = provider.getResource(mock(ResolveContext.class), "/libs/foo/test", mock(ResourceContext.class), null);
         assertNotNull(rsrc);
-
-        rsrcChildren = getChildren(rsrc.listChildren());
-        assertEquals(3, rsrcChildren.size());
-        assertTrue(rsrcChildren.contains("/libs/foo/test/x"));
-        assertTrue(rsrcChildren.contains("/libs/foo/test/y"));
-        assertTrue(rsrcChildren.contains("/libs/foo/test/z"));
 
         rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
         assertEquals(3, rsrcChildren.size());
@@ -339,10 +314,6 @@ public class BundleResourceProviderTest {
         // check children of d
         rsrc = provider.getResource(mock(ResolveContext.class), "/libs/foo/d", mock(ResourceContext.class), null);
         assertNotNull(rsrc);
-        rsrcChildren = getChildren(rsrc.listChildren());
-        assertEquals(2, rsrcChildren.size());
-        assertTrue(rsrcChildren.contains("/libs/foo/d/g"));
-        assertTrue(rsrcChildren.contains("/libs/foo/d/h"));
 
         rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
         assertEquals(2, rsrcChildren.size());
