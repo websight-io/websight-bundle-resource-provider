@@ -28,7 +28,7 @@
 
     <artifactId>org.apache.sling.bundleresource.impl</artifactId>
     <packaging>bundle</packaging>
-    <version>2.3.1-SNAPSHOT</version>
+    <version>2.3.2</version>
 
     <name>Apache Sling Bundle Resource Provider</name>
     <description>
@@ -40,7 +40,8 @@
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-bundleresource-impl.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-bundleresource-impl.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-bundleresource-impl.git</url>
-    </scm>
+      <tag>org.apache.sling.bundleresource.impl-2.3.2</tag>
+  </scm>
 
     <build>
         <plugins>
