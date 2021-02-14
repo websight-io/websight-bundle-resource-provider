@@ -21,13 +21,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.sling</groupId>
-        <artifactId>sling</artifactId>
-        <version>32</version>
+        <artifactId>sling-bundle-parent</artifactId>
+        <version>40</version>
         <relativePath />
     </parent>
 
     <artifactId>org.apache.sling.bundleresource.impl</artifactId>
-    <packaging>bundle</packaging>
     <version>2.3.3-SNAPSHOT</version>
 
     <name>Apache Sling Bundle Resource Provider</name>
@@ -36,30 +35,19 @@
         based resources.
     </description>
 
+    <properties>
+        <project.build.outputTimestamp>2020-10-15T22:24:47Z</project.build.outputTimestamp>
+    </properties>
+
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-bundleresource-impl.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-bundleresource-impl.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-bundleresource-impl.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-Activator>
-                            org.apache.sling.bundleresource.impl.Activator
-                        </Bundle-Activator>
-                        <Provide-Capability>
-                            osgi.extender;osgi.extender="org.apache.sling.bundleresource";version:Version="1.1"
-                        </Provide-Capability>
-                    </instructions>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -100,8 +88,18 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
+            <artifactId>org.osgi.framework</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.util.tracker</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.annotation.bundle</artifactId>
+        </dependency>
+        
         <!--  This is only used for some constants, no runtime dependency -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
