@@ -120,7 +120,19 @@ public class BundleResource extends AbstractResource {
             }
         }
         if ( this.mappedPath.getJSONPropertiesExtension() != null ) {
-            final String propsPath = mappedPath.getEntryPath(resourcePath.concat(this.mappedPath.getJSONPropertiesExtension()));
+            String propsPath = mappedPath.getEntryPath(resourcePath.concat(this.mappedPath.getJSONPropertiesExtension()));
+            if (propsPath == null && resourcePath.equals(mappedPath.getResourceRoot())) {
+                // SLING-10140 - Handle the special case when the resourceRoot points to a file.
+                //   In that case, the JSONProperties sibling entry may still exist
+                //   in the bundle but it would not be contained within the mappedPath set.
+
+                // Start with mapped path for the original resource
+                String entryPath = mappedPath.getEntryPath(resourcePath);
+                if (entryPath != null) {
+                    // and then add the extension for the candidate sibling path
+                    propsPath = entryPath.concat(this.mappedPath.getJSONPropertiesExtension());
+                }
+            }
             if ( propsPath != null ) {
 
                 try {
