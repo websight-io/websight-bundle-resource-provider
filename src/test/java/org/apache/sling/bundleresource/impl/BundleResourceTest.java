@@ -83,7 +83,7 @@ public class BundleResourceTest {
         assertEquals(JcrConstants.NT_FILE, rsrc.getResourceType());
         assertNull(rsrc.getResourceSuperType());
         final ValueMap vm = rsrc.getValueMap();
-        assertEquals(JcrConstants.NT_FILE, vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
+        assertNull(vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
     }
 
     @Test public void testJSONResource() throws IOException {
@@ -94,7 +94,7 @@ public class BundleResourceTest {
         assertEquals(JcrConstants.NT_FILE, rsrc.getResourceType());
         assertNull(rsrc.getResourceSuperType());
         final ValueMap vm = rsrc.getValueMap();
-        assertEquals(JcrConstants.NT_FILE, vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
+        assertNull(vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
         assertEquals("foo", vm.get("test", String.class));
     }
 
@@ -111,7 +111,7 @@ public class BundleResourceTest {
         assertEquals(JcrConstants.NT_FILE, rsrc.getResourceType());
         assertNull(rsrc.getResourceSuperType());
         final ValueMap vm = rsrc.getValueMap();
-        assertEquals(JcrConstants.NT_FILE, vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
+        assertNull(vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
         assertEquals("foo", vm.get("test", String.class));
     }
 }

@@ -33,6 +33,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
@@ -67,6 +68,8 @@ public class BundleResource extends AbstractResource {
 
     private final Map<String, Map<String, Object>> subResources;
 
+    private final boolean isFolder;
+
     @SuppressWarnings("unchecked")
     public BundleResource(final ResourceResolver resourceResolver,
             final BundleResourceCache cache,
@@ -78,6 +81,7 @@ public class BundleResource extends AbstractResource {
         this.resourceResolver = resourceResolver;
         this.cache = cache;
         this.mappedPath = mappedPath;
+        this.isFolder = isFolder;
 
         metadata = new ResourceMetadata();
         metadata.setResolutionPath(resourcePath);
@@ -88,14 +92,7 @@ public class BundleResource extends AbstractResource {
 
         final Map<String, Object> properties = new HashMap<>();
         this.valueMap = new ValueMapDecorator(Collections.unmodifiableMap(properties));
-        if (isFolder) {
-
-            properties.put(ResourceResolver.PROPERTY_RESOURCE_TYPE, NT_FOLDER);
-
-        } else {
-
-            properties.put(ResourceResolver.PROPERTY_RESOURCE_TYPE, NT_FILE);
-
+        if ( !isFolder ) {
             try {
                 final URL url = this.cache.getEntry(mappedPath.getEntryPath(resourcePath));
                 if ( url != null ) {
@@ -138,17 +135,19 @@ public class BundleResource extends AbstractResource {
                 try {
                     final URL url = this.cache.getEntry(propsPath);
                     if (url != null) {
-                        final JsonObject obj = Json.createReader(url.openStream()).readObject();
-                        for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                            final Object value = getValue(entry.getValue(), true);
-                            if ( value != null ) {
-                                if ( value instanceof Map ) {
-                                    if ( children == null ) {
-                                        children = new HashMap<>();
+                        try (JsonReader reader = Json.createReader(url.openStream())) {
+                            final JsonObject obj = reader.readObject();
+                            for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
+                                final Object value = getValue(entry.getValue());
+                                if ( value != null ) {
+                                    if ( value instanceof Map ) {
+                                        if ( children == null ) {
+                                            children = new HashMap<>();
+                                        }
+                                        children.put(entry.getKey(), (Map<String, Object>)value);
+                                    } else {
+                                        properties.put(entry.getKey(), value);
                                     }
-                                    children.put(entry.getKey(), (Map<String, Object>)value);
-                                } else {
-                                    properties.put(entry.getKey(), value);
                                 }
                             }
                         }
@@ -186,7 +185,7 @@ public class BundleResource extends AbstractResource {
         return result;
     }
 
-    private static Object getValue(final JsonValue value, final boolean topLevel) {
+    private static Object getValue(final JsonValue value) {
         switch ( value.getValueType() ) {
             // type NULL -> return null
             case NULL : return null;
@@ -204,14 +203,14 @@ public class BundleResource extends AbstractResource {
             // type ARRAY -> return list and call this method for each value
             case ARRAY : final List<Object> array = new ArrayList<>();
                          for(final JsonValue x : ((JsonArray)value)) {
-                             array.add(getValue(x, false));
+                             array.add(getValue(x));
                          }
                          return array;
             // type OBJECT -> return map
             case OBJECT : final Map<String, Object> map = new HashMap<>();
                           final JsonObject obj = (JsonObject)value;
                           for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                              map.put(entry.getKey(), getValue(entry.getValue(), false));
+                              map.put(entry.getKey(), getValue(entry.getValue()));
                           }
                           return map;
         }
@@ -229,7 +228,11 @@ public class BundleResource extends AbstractResource {
 
     @Override
     public String getResourceType() {
-        return this.valueMap.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class);
+        String resourceType = this.valueMap.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class);
+        if ( resourceType == null ) {
+            resourceType = this.isFolder ? NT_FOLDER : NT_FILE;
+        }
+        return resourceType;
     }
 
     @Override
