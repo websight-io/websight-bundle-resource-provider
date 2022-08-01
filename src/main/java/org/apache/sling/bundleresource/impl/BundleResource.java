@@ -33,7 +33,6 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
@@ -135,19 +134,17 @@ public class BundleResource extends AbstractResource {
                 try {
                     final URL url = this.cache.getEntry(propsPath);
                     if (url != null) {
-                        try (JsonReader reader = Json.createReader(url.openStream())) {
-                            final JsonObject obj = reader.readObject();
-                            for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                                final Object value = getValue(entry.getValue());
-                                if ( value != null ) {
-                                    if ( value instanceof Map ) {
-                                        if ( children == null ) {
-                                            children = new HashMap<>();
-                                        }
-                                        children.put(entry.getKey(), (Map<String, Object>)value);
-                                    } else {
-                                        properties.put(entry.getKey(), value);
+                        final JsonObject obj = Json.createReader(url.openStream()).readObject();
+                        for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
+                            final Object value = getValue(entry.getValue(), true);
+                            if ( value != null ) {
+                                if ( value instanceof Map ) {
+                                    if ( children == null ) {
+                                        children = new HashMap<>();
                                     }
+                                    children.put(entry.getKey(), (Map<String, Object>)value);
+                                } else {
+                                    properties.put(entry.getKey(), value);
                                 }
                             }
                         }
@@ -185,7 +182,7 @@ public class BundleResource extends AbstractResource {
         return result;
     }
 
-    private static Object getValue(final JsonValue value) {
+    private static Object getValue(final JsonValue value, final boolean topLevel) {
         switch ( value.getValueType() ) {
             // type NULL -> return null
             case NULL : return null;
@@ -203,14 +200,14 @@ public class BundleResource extends AbstractResource {
             // type ARRAY -> return list and call this method for each value
             case ARRAY : final List<Object> array = new ArrayList<>();
                          for(final JsonValue x : ((JsonArray)value)) {
-                             array.add(getValue(x));
+                             array.add(getValue(x, false));
                          }
                          return array;
             // type OBJECT -> return map
             case OBJECT : final Map<String, Object> map = new HashMap<>();
                           final JsonObject obj = (JsonObject)value;
                           for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                              map.put(entry.getKey(), getValue(entry.getValue()));
+                              map.put(entry.getKey(), getValue(entry.getValue(), false));
                           }
                           return map;
         }
