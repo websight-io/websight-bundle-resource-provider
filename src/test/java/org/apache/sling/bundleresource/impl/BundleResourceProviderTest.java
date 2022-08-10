@@ -121,7 +121,7 @@ public class BundleResourceProviderTest {
         final Bundle bundle = getBundle();
         addContent(bundle, "/libs/foo/test.json", "HELLOWORLD");
 
-        final PathMapping path = new PathMapping("/libs/foo", null, null);
+        final PathMapping path = new PathMapping("/libs/foo", null, null, false);
 
         final BundleResourceProvider provider = new BundleResourceProvider(new BundleResourceCache(bundle), path);
         assertNotNull(provider.getResource(mock(ResolveContext.class), "/libs/foo/test.json", mock(ResourceContext.class), null));
@@ -133,7 +133,7 @@ public class BundleResourceProviderTest {
         final Bundle bundle = getBundle();
         addContent(bundle, "/libs/foo/test.json", Collections.singletonMap("test", (Object)"foo"));
 
-        final PathMapping path = new PathMapping("/libs/foo", null, "json");
+        final PathMapping path = new PathMapping("/libs/foo", null, "json", false);
 
         final BundleResourceProvider provider = new BundleResourceProvider(new BundleResourceCache(bundle), path);
         assertNull(provider.getResource(mock(ResolveContext.class), "/libs/foo/test.json", mock(ResourceContext.class), null));
@@ -151,7 +151,7 @@ public class BundleResourceProviderTest {
         addContent(bundle, "/libs/foo/test", "HELLOWORLD");
         addContent(bundle, "/libs/foo/test.json", Collections.singletonMap("test", (Object)"foo"));
 
-        final PathMapping path = new PathMapping("/libs/foo", null, "json");
+        final PathMapping path = new PathMapping("/libs/foo", null, "json", false);
 
         final BundleResourceProvider provider = new BundleResourceProvider(new BundleResourceCache(bundle), path);
         assertNull(provider.getResource(mock(ResolveContext.class), "/libs/foo/test.json", mock(ResourceContext.class), null));
@@ -185,9 +185,9 @@ public class BundleResourceProviderTest {
 
         final PathMapping path;
         if ( prefix.length() == 0 ) {
-            path = new PathMapping("/libs/foo", null, "json");
+            path = new PathMapping("/libs/foo", null, "json", false);
         } else {
-            path = new PathMapping("/libs/foo", prefix + "/libs/foo", "json");
+            path = new PathMapping("/libs/foo", prefix + "/libs/foo", "json", false);
         }
 
         final BundleResourceProvider provider = new BundleResourceProvider(new BundleResourceCache(bundle), path);
@@ -278,9 +278,9 @@ public class BundleResourceProviderTest {
 
         final PathMapping path;
         if ( prefix.length() == 0 ) {
-            path = new PathMapping("/libs/foo", null, "json");
+            path = new PathMapping("/libs/foo", null, "json", false);
         } else {
-            path = new PathMapping("/libs/foo", prefix + "/libs/foo", "json");
+            path = new PathMapping("/libs/foo", prefix + "/libs/foo", "json", false);
         }
 
         final BundleResourceProvider provider = new BundleResourceProvider(new BundleResourceCache(bundle), path);
