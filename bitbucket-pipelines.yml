@@ -1,0 +1,6 @@
+pipelines:
+  default:
+    - step:
+        name: Sample
+        script:
+          - echo "Pipeline works."
