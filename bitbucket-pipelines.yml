@@ -1,36 +1,26 @@
-# Copyright (C) 2022 Dynamic Solutions
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 definitions:
   steps:
-    - step: &verify
-        image: maven:3.8.6-jdk-8
-        name: 'Verify'
-        script:
-          - mvn -B verify
-          - mvn -B -DdryRun=true release:prepare
     - step: &configure-aws-token
-        name: 'Release: Configure AWS token'
+        name: 'Release: configure AWS token'
         image: atlassian/pipelines-awscli:1.21.7
         script:
           - export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain websight --domain-owner 299371835903 --query authorizationToken --output text`
           - echo export CODEARTIFACT_AUTH_TOKEN=$CODEARTIFACT_AUTH_TOKEN > _aws_token.sh
         artifacts:
           - _aws_token.sh
-    - step: &release
+    - step: &verify
+        name: 'Verify'
         image: maven:3.8.6-jdk-8
+        caches:
+          - maven
+        script:
+          - mvn -B verify
+          - mvn -B -DdryRun=true release:prepare
+    - step: &release
         name: 'Release: deploy to AWS Code Artifact and S3'
+        image: maven:3.8.6-jdk-8
+        caches:
+          - maven
         script:
           - source _aws_token.sh
           - mkdir .maven
@@ -39,17 +29,18 @@ definitions:
           - git config --global user.email "bitbucket@ds.pl"
           - git config --global user.name "BitBucket CI"
           - mvn -B release:prepare
-          - CURRENT_VERSION=$(git describe --tags --abbrev=0)
+          - RELEASED_VERSION=$(git describe --tags --abbrev=0)
           - mvn -s .maven/settings-code-artifact-deploy.xml -P code-artifact-distribution release:perform
-          - git checkout tags/${CURRENT_VERSION} -b s3-release-${CURRENT_VERSION}
+          - git checkout tags/${RELEASED_VERSION}
           - mvn -s .maven/settings-s3-publication.xml -P s3-distribution -Dmaven.install.skip=true -DskipTests=true deploy
 
 options:
   max-time: 5
 
 pipelines:
-  default:
-    - step: *verify
+  pull-requests:
+    '**':
+      - step: *verify
   branches:
     master:
       - step: *verify
