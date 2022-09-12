@@ -20,6 +20,7 @@ package org.apache.sling.bundleresource.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.sling.commons.osgi.ManifestHeader;
 
@@ -43,7 +44,7 @@ class PathMapping {
         for (final ManifestHeader.Entry entry : header.getEntries()) {
             final String resourceRoot = entry.getValue();
             final String pathDirective = entry.getDirectiveValue(DIR_PATH);
-            final String expandDirective = entry.getDirectiveValue(DIR_JSON);
+            final String expandDirective =  Optional.ofNullable(entry.getDirectiveValue(DIR_JSON)).orElse("json");
             if (pathDirective != null) {
                 prefixList.add(new PathMapping(resourceRoot, pathDirective, expandDirective));
             } else {

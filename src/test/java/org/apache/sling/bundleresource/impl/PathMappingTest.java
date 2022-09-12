@@ -19,6 +19,7 @@
 package org.apache.sling.bundleresource.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
@@ -32,7 +33,12 @@ public class PathMappingTest {
         assertNull(paths[0].getEntryRootPrefix());
         assertEquals("/libs/foo", paths[0].getResourceRoot());
         assertEquals("/libs/foo/", paths[0].getResourceRootPrefix());
-        assertNull(paths[0].getJSONPropertiesExtension());
+        assertNotNull(paths[0].getJSONPropertiesExtension());
+    }
+
+    @Test public void testDefaultPropJSON() {
+        final PathMapping[] paths = PathMapping.getRoots("/libs/foo");
+        assertEquals(".json", paths[0].getJSONPropertiesExtension());
     }
 
     @Test public void testSimpleRootWithJSON() {
