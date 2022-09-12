@@ -129,9 +129,11 @@ public class BundleResource extends AbstractResource {
             }
         }
         if ( propsPath != null ) {
-
             try {
-                final URL url = this.cache.getEntry(propsPath);
+                URL url = this.cache.getEntry(propsPath);
+                if (url == null) {
+                    url = getFallbackContentUrl(mappedPath, resourcePath);
+                }
                 if (url != null) {
                     final JsonObject obj = Json.createReader(url.openStream()).readObject();
                     for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
@@ -154,6 +156,15 @@ public class BundleResource extends AbstractResource {
             }
         }
         this.subResources = children;
+    }
+
+    private URL getFallbackContentUrl(PathMapping mappedPath, String resourcePath) {
+        // WS-1963 - Prepare and try to use fallback to .content.json
+        String fallbackPropsPath = mappedPath.getEntryPath(resourcePath.concat("/").concat(this.mappedPath.getJSONPropertiesExtension()));
+        if (fallbackPropsPath != null) {
+            return this.cache.getEntry(fallbackPropsPath);
+        }
+        return null;
     }
 
     Resource getChildResource(final String path) {

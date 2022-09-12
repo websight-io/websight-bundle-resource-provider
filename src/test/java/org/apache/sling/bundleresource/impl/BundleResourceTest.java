@@ -115,6 +115,17 @@ public class BundleResourceTest {
         assertEquals("foo", vm.get("test", String.class));
     }
 
+    @Test public void testDefaultJSONResource() throws IOException {
+        final BundleResourceCache cache = getBundleResourceCache();
+        addContent(cache, "/libs/foo/test/.json", Collections.singletonMap("test", (Object)"foo"));
+        final BundleResource rsrc = new BundleResource(null, cache,
+                new PathMapping("/libs/foo", null, "json"), "/libs/foo/test", null, true);
+        assertEquals(JcrConstants.NT_FOLDER, rsrc.getResourceType());
+        assertNull(rsrc.getResourceSuperType());
+        final ValueMap vm = rsrc.getValueMap();
+        assertNull(vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
+        assertEquals("foo", vm.get("test", String.class));
+    }
 
     @Test public void testSkipSettingResourceTypeForFile() {
         testSkipSettingResourceType(false, JcrConstants.NT_FILE, getBundleResourceCache());
