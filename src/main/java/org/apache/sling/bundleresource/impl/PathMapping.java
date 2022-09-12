@@ -20,7 +20,6 @@ package org.apache.sling.bundleresource.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.sling.commons.osgi.ManifestHeader;
 
@@ -28,6 +27,7 @@ class PathMapping {
 
     public static final String DIR_PATH = "path";
     public static final String DIR_JSON = "propsJSON";
+    public static final String DEFAULT_JSON_DIR = ".content.json";
 
     private static final char prefixSeparatorChar = '!';
     private final String resourceRoot;
@@ -44,7 +44,7 @@ class PathMapping {
         for (final ManifestHeader.Entry entry : header.getEntries()) {
             final String resourceRoot = entry.getValue();
             final String pathDirective = entry.getDirectiveValue(DIR_PATH);
-            final String expandDirective =  Optional.ofNullable(entry.getDirectiveValue(DIR_JSON)).orElse("json");
+            final String expandDirective =  entry.getDirectiveValue(DIR_JSON);
             if (pathDirective != null) {
                 prefixList.add(new PathMapping(resourceRoot, pathDirective, expandDirective));
             } else {
@@ -77,7 +77,11 @@ class PathMapping {
         this.resourceRootPrefix = ensureTrailingSlash(resourceRoot);
         this.entryRoot = ensureLeadingSlash(ensureNoTrailingSlash(entryRoot));
         this.entryRootPrefix = ensureLeadingSlash(ensureTrailingSlash(entryRoot));
-        this.jsonExpandExtension = ensureLeadingDot(expandDirective);
+        if (expandDirective == null) {
+            this.jsonExpandExtension =  DEFAULT_JSON_DIR;
+        } else {
+            this.jsonExpandExtension = ensureLeadingDot(expandDirective);
+        }
     }
 
     String getJSONPropertiesExtension() {
@@ -132,14 +136,9 @@ class PathMapping {
     }
 
     private static String ensureLeadingDot(final String path) {
-        if (path == null || path.length() == 0) {
-            return null;
-        }
-
         if (!path.startsWith(".")) {
             return ".".concat(path);
         }
-
         return path;
     }
 

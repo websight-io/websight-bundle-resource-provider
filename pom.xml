@@ -36,6 +36,11 @@
         based resources. Forked from 2.3.5-SNAPSHOT.
     </description>
 
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
     <scm>
         <connection>scm:git:ssh://git@bitbucket.org/teamds-workspace/sling-org-apache-sling-bundleresource-impl.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/teamds-workspace/sling-org-apache-sling-bundleresource-impl.git</developerConnection>

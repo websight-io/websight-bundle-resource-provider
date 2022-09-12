@@ -38,7 +38,7 @@ public class PathMappingTest {
 
     @Test public void testDefaultPropJSON() {
         final PathMapping[] paths = PathMapping.getRoots("/libs/foo");
-        assertEquals(".json", paths[0].getJSONPropertiesExtension());
+        assertEquals(PathMapping.DEFAULT_JSON_DIR, paths[0].getJSONPropertiesExtension());
     }
 
     @Test public void testSimpleRootWithJSON() {

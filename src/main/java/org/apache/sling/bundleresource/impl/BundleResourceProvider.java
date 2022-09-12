@@ -108,7 +108,7 @@ public class BundleResourceProvider extends ResourceProvider<Object> {
             // which would then of course be a file
             if (entry == null) {
                 entry = cache.getEntry(entryPath);
-                if ( entry == null && this.root.getJSONPropertiesExtension() != null ) {
+                if ( entry == null) {
                     entry = cache.getEntry(entryPath + this.root.getJSONPropertiesExtension());
                 }
             }
@@ -132,20 +132,18 @@ public class BundleResourceProvider extends ResourceProvider<Object> {
 
             // the bundle does not contain the path
             // if JSON is enabled check for any parent
-            if ( this.root.getJSONPropertiesExtension() != null ) {
-                String parentPath = ResourceUtil.getParent(resourcePath);
-                while ( parentPath != null ) {
-                    final Resource rsrc = getResource(ctx, parentPath, resourceContext, null);
-                    if (rsrc != null ) {
-                        final Resource childResource = ((BundleResource)rsrc).getChildResource(resourcePath.substring(parentPath.length() + 1));
-                        if ( childResource != null ) {
-                            return childResource;
-                        }
+            String parentPath = ResourceUtil.getParent(resourcePath);
+            while ( parentPath != null ) {
+                final Resource rsrc = getResource(ctx, parentPath, resourceContext, null);
+                if (rsrc != null ) {
+                    final Resource childResource = ((BundleResource)rsrc).getChildResource(resourcePath.substring(parentPath.length() + 1));
+                    if ( childResource != null ) {
+                        return childResource;
                     }
-                    parentPath = ResourceUtil.getParent(parentPath);
-                    if ( parentPath != null && this.getMappedPath(parentPath) == null ) {
-                        parentPath = null;
-                    }
+                }
+                parentPath = ResourceUtil.getParent(parentPath);
+                if ( parentPath != null && this.getMappedPath(parentPath) == null ) {
+                    parentPath = null;
                 }
             }
         }

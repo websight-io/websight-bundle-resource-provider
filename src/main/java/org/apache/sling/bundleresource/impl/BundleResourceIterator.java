@@ -39,24 +39,36 @@ import org.slf4j.LoggerFactory;
  */
 class BundleResourceIterator implements Iterator<Resource> {
 
-    /** default log */
+    /**
+     * default log
+     */
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    /** The bundle resource resolver */
+    /**
+     * The bundle resource resolver
+     */
     private final ResourceResolver resourceResolver;
 
-    /** Bundle providing the entry resources */
+    /**
+     * Bundle providing the entry resources
+     */
     private final BundleResourceCache cache;
 
     private final PathMapping mappedPath;
 
-    /** Underlying bundle entry path enumeration */
+    /**
+     * Underlying bundle entry path enumeration
+     */
     private final Iterator<String> entries;
 
-    /** The length of the parent entry path, see seek() */
+    /**
+     * The length of the parent entry path, see seek()
+     */
     private final int prefixLength;
 
-    /** The prefetched next iterator entry, null at the end of iterating */
+    /**
+     * The prefetched next iterator entry, null at the end of iterating
+     */
     private Resource nextResult;
 
     private final Map<String, Map<String, Object>> subResources;
@@ -73,10 +85,10 @@ class BundleResourceIterator implements Iterator<Resource> {
     }
 
     BundleResourceIterator(final ResourceResolver resourceResolver,
-            final BundleResourceCache bundle,
-            final PathMapping mappedPath,
-            final String parentPath,
-            final Map<String, Map<String, Object>> subResources) {
+                           final BundleResourceCache bundle,
+                           final PathMapping mappedPath,
+                           final String parentPath,
+                           final Map<String, Map<String, Object>> subResources) {
 
         // trailing slash to enumerate children
         final String parentEntryPath = mappedPath.getEntryPath(parentPath.concat("/"));
@@ -93,25 +105,23 @@ class BundleResourceIterator implements Iterator<Resource> {
 
     private Iterator<String> getFilteredEntries(final String parentEntryPath) {
         final Set<String> bundleEntries = new TreeSet<>(cache.getEntryPaths(parentEntryPath));
-        if ( this.mappedPath.getJSONPropertiesExtension() != null ) {
-            final Set<String> add = new HashSet<>();
-            final Iterator<String> iter = bundleEntries.iterator();
-            while ( iter.hasNext() ) {
-                final String path = iter.next();
-                if ( path.endsWith(this.mappedPath.getJSONPropertiesExtension()) ) {
-                    iter.remove();
-                    add.add(path.substring(0, path.length() - this.mappedPath.getJSONPropertiesExtension().length()));
-                }
+        final Set<String> add = new HashSet<>();
+        final Iterator<String> iter = bundleEntries.iterator();
+        while (iter.hasNext()) {
+            final String path = iter.next();
+            if (path.endsWith(this.mappedPath.getJSONPropertiesExtension())) {
+                iter.remove();
+                add.add(path.substring(0, path.length() - this.mappedPath.getJSONPropertiesExtension().length()));
             }
-            bundleEntries.addAll(add);
-            if ( subResources != null ) {
-                for(final String name : subResources.keySet()) {
-                    final String fullPath = parentEntryPath.concat(name);
-                    if ( !bundleEntries.contains(fullPath) ) {
-                        bundleEntries.add(fullPath);
-                    } else {
-                        subResources.remove(name);
-                    }
+        }
+        bundleEntries.addAll(add);
+        if (subResources != null) {
+            for (final String name : subResources.keySet()) {
+                final String fullPath = parentEntryPath.concat(name);
+                if (!bundleEntries.contains(fullPath)) {
+                    bundleEntries.add(fullPath);
+                } else {
+                    subResources.remove(name);
                 }
             }
         }
@@ -119,13 +129,17 @@ class BundleResourceIterator implements Iterator<Resource> {
         return (bundleEntries.isEmpty() ? null : bundleEntries.iterator());
     }
 
-    /** Returns true if there is another Resource available */
+    /**
+     * Returns true if there is another Resource available
+     */
     @Override
     public boolean hasNext() {
         return nextResult != null;
     }
 
-    /** Returns the next resource in the iterator */
+    /**
+     * Returns the next resource in the iterator
+     */
     @Override
     public Resource next() {
         if (!hasNext()) {
@@ -164,7 +178,7 @@ class BundleResourceIterator implements Iterator<Resource> {
             if (slash < 0 || slash == entry.length() - 1) {
                 log.debug("seek: Using entry {}", entry);
                 final boolean isFolder = entry.endsWith("/");
-                final String entryPath = isFolder ? entry.substring(0, entry.length()-1) : entry;
+                final String entryPath = isFolder ? entry.substring(0, entry.length() - 1) : entry;
                 return new BundleResource(resourceResolver, cache, mappedPath,
                         mappedPath.getResourcePath(entryPath),
                         this.subResources != null ? this.subResources.get(ResourceUtil.getName(entryPath)) : null,
