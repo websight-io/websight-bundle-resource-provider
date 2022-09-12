@@ -79,22 +79,22 @@ public class BundleResourceTest {
         final BundleResourceCache cache = getBundleResourceCache();
         when(cache.getEntry("/libs/foo/test.json")).thenReturn(new URL("file:/libs/foo/test.json"));
         final BundleResource rsrc = new BundleResource(null, cache,
-                new PathMapping("/libs/foo", null, null, false), "/libs/foo/test.json", null, false);
+                new PathMapping("/libs/foo", null, null), "/libs/foo/test.json", null, false);
         assertEquals(JcrConstants.NT_FILE, rsrc.getResourceType());
         assertNull(rsrc.getResourceSuperType());
         final ValueMap vm = rsrc.getValueMap();
-        assertEquals(JcrConstants.NT_FILE, vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
+        assertNull(vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
     }
 
     @Test public void testJSONResource() throws IOException {
         final BundleResourceCache cache = getBundleResourceCache();
         addContent(cache, "/libs/foo/test.json", Collections.singletonMap("test", (Object)"foo"));
         final BundleResource rsrc = new BundleResource(null, cache,
-                new PathMapping("/libs/foo", null, "json", false), "/libs/foo/test", null, false);
+                new PathMapping("/libs/foo", null, "json"), "/libs/foo/test", null, false);
         assertEquals(JcrConstants.NT_FILE, rsrc.getResourceType());
         assertNull(rsrc.getResourceSuperType());
         final ValueMap vm = rsrc.getValueMap();
-        assertEquals(JcrConstants.NT_FILE, vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
+        assertNull(vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
         assertEquals("foo", vm.get("test", String.class));
     }
 
@@ -107,11 +107,11 @@ public class BundleResourceTest {
         addContent(cache, "/SLING_INF/libs/foo/test.txt", "Hello Text");
         addContent(cache, "/SLING-INF/libs/foo/test.txt.json", Collections.singletonMap("test", (Object)"foo"));
         final BundleResource rsrc = new BundleResource(null, cache,
-                new PathMapping("/libs/foo/test.txt", "/SLING-INF/libs/foo/test.txt", "json", false), "/libs/foo/test.txt", null, false);
+                new PathMapping("/libs/foo/test.txt", "/SLING-INF/libs/foo/test.txt", "json"), "/libs/foo/test.txt", null, false);
         assertEquals(JcrConstants.NT_FILE, rsrc.getResourceType());
         assertNull(rsrc.getResourceSuperType());
         final ValueMap vm = rsrc.getValueMap();
-        assertEquals(JcrConstants.NT_FILE, vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
+        assertNull(vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
         assertEquals("foo", vm.get("test", String.class));
     }
 
@@ -126,7 +126,7 @@ public class BundleResourceTest {
 
     private static void testSkipSettingResourceType(final boolean isFolder,final String resourceType, final BundleResourceCache cache) {
         final BundleResource rsrc = new BundleResource(null, cache,
-                PathMapping.create("/", "json", true), "/libs/foo/test.txt", null, isFolder);
+                PathMapping.create("/", "json"), "/libs/foo/test.txt", null, isFolder);
         final ValueMap vm = rsrc.getValueMap();
 
         assertEquals(resourceType, rsrc.getResourceType());

@@ -91,9 +91,6 @@ public class BundleResource extends AbstractResource {
 
         final Map<String, Object> properties = new HashMap<>();
         this.valueMap = new ValueMapDecorator(Collections.unmodifiableMap(properties));
-        if ( !mappedPath.isSkipSettingResourceTypeProperty()) {
-            setResourceTypeProperty(properties, isFolder);
-        }
         if ( !isFolder ) {
             try {
                 final URL url = this.cache.getEntry(mappedPath.getEntryPath(resourcePath));
@@ -159,14 +156,6 @@ public class BundleResource extends AbstractResource {
             }
         }
         this.subResources = children;
-    }
-
-    private static void setResourceTypeProperty(Map<String, Object> properties, boolean isFolder) {
-        if (isFolder) {
-            properties.put(ResourceResolver.PROPERTY_RESOURCE_TYPE, NT_FOLDER);
-        } else {
-            properties.put(ResourceResolver.PROPERTY_RESOURCE_TYPE, NT_FILE);
-        }
     }
 
     Resource getChildResource(final String path) {

@@ -21,9 +21,6 @@ package org.apache.sling.bundleresource.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Test;
 
 public class PathMappingTest {
@@ -46,24 +43,5 @@ public class PathMappingTest {
         assertEquals("/libs/foo", paths[0].getResourceRoot());
         assertEquals("/libs/foo/", paths[0].getResourceRootPrefix());
         assertEquals(".json", paths[0].getJSONPropertiesExtension());
-    }
-
-    @Test public void testSkipSettingResourceTypePropertyParsing() {
-        Map<String, Boolean> tests = new HashMap<>();
-        tests.put("true", true);
-        tests.put("TRUE", true);
-        tests.put("True", true);
-        tests.put("TRUe", true);
-
-        tests.put("Tru", false);
-        tests.put("T", false);
-        tests.put("false", false);
-        tests.put("", false);
-
-        for (Map.Entry<String, Boolean> test : tests.entrySet()) {
-            final PathMapping[] paths = PathMapping.getRoots("/libs/foo;" + PathMapping.DIR_JSON + ":=json;" + PathMapping.SKIP_SETTING_RESOURCE_TYPE_FLAG + ":=" + test.getKey());
-            assertEquals(1, paths.length);
-            assertEquals(test.getKey() + " should be evaluated to: " + test.getValue(), test.getValue(), paths[0].isSkipSettingResourceTypeProperty());
-        }
     }
 }

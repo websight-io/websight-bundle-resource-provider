@@ -27,14 +27,12 @@ class PathMapping {
 
     public static final String DIR_PATH = "path";
     public static final String DIR_JSON = "propsJSON";
-    public static final String SKIP_SETTING_RESOURCE_TYPE_FLAG = "skipSettingResourceTypeProperty";
 
     private static final char prefixSeparatorChar = '!';
     private final String resourceRoot;
     private final String resourceRootPrefix;
     private final String entryRoot;
     private final String entryRootPrefix;
-    private final boolean skipSettingResourceTypeProperty;
 
     private final String jsonExpandExtension;
 
@@ -46,11 +44,10 @@ class PathMapping {
             final String resourceRoot = entry.getValue();
             final String pathDirective = entry.getDirectiveValue(DIR_PATH);
             final String expandDirective = entry.getDirectiveValue(DIR_JSON);
-            final boolean skipSettingResourceTypeProperty = Boolean.parseBoolean(entry.getDirectiveValue(SKIP_SETTING_RESOURCE_TYPE_FLAG));
             if (pathDirective != null) {
-                prefixList.add(new PathMapping(resourceRoot, pathDirective, expandDirective, skipSettingResourceTypeProperty));
+                prefixList.add(new PathMapping(resourceRoot, pathDirective, expandDirective));
             } else {
-                prefixList.add(PathMapping.create(resourceRoot, expandDirective, skipSettingResourceTypeProperty));
+                prefixList.add(PathMapping.create(resourceRoot, expandDirective));
             }
         }
         return prefixList.toArray(new PathMapping[prefixList.size()]);
@@ -58,8 +55,7 @@ class PathMapping {
 
 
     static PathMapping create(final String configPath,
-            final String expandDirective,
-            final boolean skipSettingResourceTypeProperty) {
+            final String expandDirective) {
         String resourceRoot;
         String entryRoot;
         int prefixSep = configPath.indexOf(prefixSeparatorChar);
@@ -70,19 +66,17 @@ class PathMapping {
             resourceRoot = configPath;
             entryRoot = null;
         }
-        return new PathMapping(resourceRoot, entryRoot, expandDirective, skipSettingResourceTypeProperty);
+        return new PathMapping(resourceRoot, entryRoot, expandDirective);
     }
 
     PathMapping(final String resourceRoot,
             final String entryRoot,
-            final String expandDirective,
-            final boolean skipSettingResourceTypeProperty) {
+            final String expandDirective) {
         this.resourceRoot = ensureNoTrailingSlash(resourceRoot);
         this.resourceRootPrefix = ensureTrailingSlash(resourceRoot);
         this.entryRoot = ensureLeadingSlash(ensureNoTrailingSlash(entryRoot));
         this.entryRootPrefix = ensureLeadingSlash(ensureTrailingSlash(entryRoot));
         this.jsonExpandExtension = ensureLeadingDot(expandDirective);
-        this.skipSettingResourceTypeProperty = skipSettingResourceTypeProperty;
     }
 
     String getJSONPropertiesExtension() {
@@ -134,10 +128,6 @@ class PathMapping {
 
     String getEntryRootPrefix() {
         return entryRootPrefix;
-    }
-
-    public boolean isSkipSettingResourceTypeProperty() {
-        return skipSettingResourceTypeProperty;
     }
 
     private static String ensureLeadingDot(final String path) {
