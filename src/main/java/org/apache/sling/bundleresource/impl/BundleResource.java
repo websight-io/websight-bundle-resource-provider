@@ -33,6 +33,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
@@ -135,17 +136,19 @@ public class BundleResource extends AbstractResource {
                     url = getFallbackContentUrl(mappedPath, resourcePath);
                 }
                 if (url != null) {
-                    final JsonObject obj = Json.createReader(url.openStream()).readObject();
-                    for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                        final Object value = getValue(entry.getValue(), true);
-                        if ( value != null ) {
-                            if ( value instanceof Map ) {
-                                if ( children == null ) {
-                                    children = new HashMap<>();
+                    try (JsonReader reader = Json.createReader(url.openStream())) {
+                        final JsonObject obj = reader.readObject();
+                        for (final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
+                            final Object value = getValue(entry.getValue(), true);
+                            if (value != null) {
+                                if (value instanceof Map) {
+                                    if (children == null) {
+                                        children = new HashMap<>();
+                                    }
+                                    children.put(entry.getKey(), (Map<String, Object>) value);
+                                } else {
+                                    properties.put(entry.getKey(), value);
                                 }
-                                children.put(entry.getKey(), (Map<String, Object>)value);
-                            } else {
-                                properties.put(entry.getKey(), value);
                             }
                         }
                     }

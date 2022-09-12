@@ -67,6 +67,7 @@ public class BundleResourceURLConnection extends URLConnection {
     }
 
     /** Returns the input stream of the Bundle provided URLConnection */
+    @Override
     public InputStream getInputStream() throws IOException {
         connect();
 
@@ -74,6 +75,7 @@ public class BundleResourceURLConnection extends URLConnection {
     }
 
     /** Returns the content length of the Bundle provided URLConnection */
+    @Override
     public int getContentLength() {
         try {
             connect();
