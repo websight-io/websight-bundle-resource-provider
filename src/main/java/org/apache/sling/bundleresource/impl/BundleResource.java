@@ -33,6 +33,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
@@ -91,9 +92,6 @@ public class BundleResource extends AbstractResource {
 
         final Map<String, Object> properties = new HashMap<>();
         this.valueMap = new ValueMapDecorator(Collections.unmodifiableMap(properties));
-        if ( !mappedPath.isSkipSettingResourceTypeProperty()) {
-            setResourceTypeProperty(properties, isFolder);
-        }
         if ( !isFolder ) {
             try {
                 final URL url = this.cache.getEntry(mappedPath.getEntryPath(resourcePath));
@@ -118,55 +116,58 @@ public class BundleResource extends AbstractResource {
                 }
             }
         }
-        if ( this.mappedPath.getJSONPropertiesExtension() != null ) {
-            String propsPath = mappedPath.getEntryPath(resourcePath.concat(this.mappedPath.getJSONPropertiesExtension()));
-            if (propsPath == null && resourcePath.equals(mappedPath.getResourceRoot())) {
-                // SLING-10140 - Handle the special case when the resourceRoot points to a file.
-                //   In that case, the JSONProperties sibling entry may still exist
-                //   in the bundle but it would not be contained within the mappedPath set.
+        String propsPath = mappedPath.getEntryPath(resourcePath.concat(this.mappedPath.getJSONPropertiesExtension()));
+        if (propsPath == null && resourcePath.equals(mappedPath.getResourceRoot())) {
+            // SLING-10140 - Handle the special case when the resourceRoot points to a file.
+            //   In that case, the JSONProperties sibling entry may still exist
+            //   in the bundle but it would not be contained within the mappedPath set.
 
-                // Start with mapped path for the original resource
-                String entryPath = mappedPath.getEntryPath(resourcePath);
-                if (entryPath != null) {
-                    // and then add the extension for the candidate sibling path
-                    propsPath = entryPath.concat(this.mappedPath.getJSONPropertiesExtension());
-                }
+            // Start with mapped path for the original resource
+            String entryPath = mappedPath.getEntryPath(resourcePath);
+            if (entryPath != null) {
+                // and then add the extension for the candidate sibling path
+                propsPath = entryPath.concat(this.mappedPath.getJSONPropertiesExtension());
             }
-            if ( propsPath != null ) {
-
-                try {
-                    final URL url = this.cache.getEntry(propsPath);
-                    if (url != null) {
-                        final JsonObject obj = Json.createReader(url.openStream()).readObject();
-                        for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
+        }
+        if ( propsPath != null ) {
+            try {
+                URL url = this.cache.getEntry(propsPath);
+                if (url == null) {
+                    url = getFallbackContentUrl(mappedPath, resourcePath);
+                }
+                if (url != null) {
+                    try (JsonReader reader = Json.createReader(url.openStream())) {
+                        final JsonObject obj = reader.readObject();
+                        for (final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
                             final Object value = getValue(entry.getValue(), true);
-                            if ( value != null ) {
-                                if ( value instanceof Map ) {
-                                    if ( children == null ) {
+                            if (value != null) {
+                                if (value instanceof Map) {
+                                    if (children == null) {
                                         children = new HashMap<>();
                                     }
-                                    children.put(entry.getKey(), (Map<String, Object>)value);
+                                    children.put(entry.getKey(), (Map<String, Object>) value);
                                 } else {
                                     properties.put(entry.getKey(), value);
                                 }
                             }
                         }
                     }
-                } catch (final IOException ioe) {
-                    log.error(
-                            "getInputStream: Cannot get input stream for " + propsPath, ioe);
                 }
+            } catch (final IOException ioe) {
+                log.error(
+                        "getInputStream: Cannot get input stream for " + propsPath, ioe);
             }
         }
         this.subResources = children;
     }
 
-    private static void setResourceTypeProperty(Map<String, Object> properties, boolean isFolder) {
-        if (isFolder) {
-            properties.put(ResourceResolver.PROPERTY_RESOURCE_TYPE, NT_FOLDER);
-        } else {
-            properties.put(ResourceResolver.PROPERTY_RESOURCE_TYPE, NT_FILE);
+    private URL getFallbackContentUrl(PathMapping mappedPath, String resourcePath) {
+        // WS-1963 - Prepare and try to use fallback to .content.json
+        String fallbackPropsPath = mappedPath.getEntryPath(resourcePath.concat("/").concat(this.mappedPath.getJSONPropertiesExtension()));
+        if (fallbackPropsPath != null) {
+            return this.cache.getEntry(fallbackPropsPath);
         }
+        return null;
     }
 
     Resource getChildResource(final String path) {

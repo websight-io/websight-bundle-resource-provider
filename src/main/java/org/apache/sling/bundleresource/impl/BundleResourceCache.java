@@ -106,9 +106,9 @@ class BundleResourceCache {
         this.bundle = bundle;
 
         // create the limited maps wrapping in synchronized maps
-        this.cache = Collections.synchronizedMap(new BundleResourceMap<String, URL>(
+        this.cache = Collections.synchronizedMap(new BundleResourceMap<URL>(
             CACHE_SIZE));
-        this.listCache = Collections.synchronizedMap(new BundleResourceMap<String, List<String>>(
+        this.listCache = Collections.synchronizedMap(new BundleResourceMap<List<String>>(
             LIST_CACHE_SIZE));
     }
 
@@ -155,7 +155,7 @@ class BundleResourceCache {
      * method but returns an <code>Iterator<String></code> instead of an
      * <code>Enumeration</code> of strings.
      *
-     * @param parentPath The path to the parent entry whose child entries are to
+     * @param path The path to the parent entry whose child entries are to
      *            be returned.
      * @return An <code>Iterator<String></code> providing the paths of
      *         entries considered direct children of the <code>parentPath</code>
@@ -227,7 +227,7 @@ class BundleResourceCache {
      * {@link #removeEldestEntry(Entry)} method to implement the size limit,
      * which is set in the constructor.
      */
-    private static class BundleResourceMap<K, V> extends
+    private static class BundleResourceMap<V> extends
             LinkedHashMap<String, V> {
 
         private static final long serialVersionUID = 7455098291380945276L;

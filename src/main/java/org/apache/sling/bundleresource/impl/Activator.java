@@ -143,11 +143,11 @@ public class Activator implements BundleActivator, BundleListener {
                     log.debug("addBundleResourceProvider: Service ID = {}", id);
                 }
             }
-        } catch (final Throwable t) {
+        } catch (final Exception ex) {
             log.error(
                 "activate: Problem while registering bundle resources for bundle "
                      + bundle.getSymbolicName() + ":" + bundle.getVersion() + " (" + bundle.getBundleId() + ")",
-                t);
+                ex);
         }
     }
 
