@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
@@ -67,7 +68,7 @@ public class BundleResourceProviderTest {
     }
 
     void finishContent(Bundle bundle) {
-        for(final Map.Entry<String, List<String>> entry : ResourceURLStreamHandler.getParentChildRelationship().entrySet()) {
+        for (final Map.Entry<String, List<String>> entry : ResourceURLStreamHandler.getParentChildRelationship().entrySet()) {
             when(bundle.getEntryPaths(entry.getKey())).thenReturn(Collections.enumeration(entry.getValue()));
         }
     }
@@ -81,7 +82,7 @@ public class BundleResourceProviderTest {
 
     String getContent(final Resource rsrc) throws IOException {
         final InputStream is = rsrc.adaptTo(InputStream.class);
-        if ( is == null ) {
+        if (is == null) {
             return null;
         }
         final byte[] buffer = new byte[20];
@@ -91,8 +92,8 @@ public class BundleResourceProviderTest {
 
     List<String> getChildren(final Iterator<Resource> i) {
         final List<String> list = new ArrayList<>();
-        if ( i != null ) {
-            while ( i.hasNext() ) {
+        if (i != null) {
+            while (i.hasNext()) {
                 list.add(i.next().getPath());
             }
         }
@@ -117,7 +118,8 @@ public class BundleResourceProviderTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test public void testFileResource() throws IOException {
+    @Test
+    public void testFileResource() throws IOException {
         final Bundle bundle = getBundle();
         addContent(bundle, "/libs/foo/test.json", "HELLOWORLD");
 
@@ -129,9 +131,10 @@ public class BundleResourceProviderTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test public void testJSONResource() throws IOException {
+    @Test
+    public void testJSONResource() throws IOException {
         final Bundle bundle = getBundle();
-        addContent(bundle, "/libs/foo/test.json", Collections.singletonMap("test", (Object)"foo"));
+        addContent(bundle, "/libs/foo/test.json", Collections.singletonMap("test", (Object) "foo"));
 
         final PathMapping path = new PathMapping("/libs/foo", null, "json");
 
@@ -146,10 +149,11 @@ public class BundleResourceProviderTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test public void testFileAndJSONResource() throws IOException {
+    @Test
+    public void testFileAndJSONResource() throws IOException {
         final Bundle bundle = getBundle();
         addContent(bundle, "/libs/foo/test", "HELLOWORLD");
-        addContent(bundle, "/libs/foo/test.json", Collections.singletonMap("test", (Object)"foo"));
+        addContent(bundle, "/libs/foo/test.json", Collections.singletonMap("test", (Object) "foo"));
 
         final PathMapping path = new PathMapping("/libs/foo", null, "json");
 
@@ -164,7 +168,31 @@ public class BundleResourceProviderTest {
         assertEquals("HELLOWORLD", getContent(rsrc));
     }
 
-    @Test public void testTreeWithoutDeepJSON() throws IOException {
+    @Test
+    public void testChildrenCount() throws IOException {
+        final Bundle bundle = getBundle();
+        addContent(bundle, "/libs/foo/test", "HELLOWORLD");
+        addContent(bundle, "/libs/foo/test.json", Collections.singletonMap("test", (Object) "foo"));
+        addContent(bundle, "/libs/foo/test/.json", Collections.singletonMap("test", (Object) "bar"));
+        finishContent(bundle);
+
+        final PathMapping path = new PathMapping("/libs/foo", null, "json");
+        final BundleResourceProvider provider = new BundleResourceProvider(new BundleResourceCache(bundle), path);
+
+        // Properties cannot be accessed directly
+        assertNotNull(provider.getResource(mock(ResolveContext.class), "/libs/foo/test", mock(ResourceContext.class), null));
+        assertNull(provider.getResource(mock(ResolveContext.class), "/libs/foo/test.json", mock(ResourceContext.class), null));
+        assertNull(provider.getResource(mock(ResolveContext.class), "/libs/foo/test/.json", mock(ResourceContext.class), null));
+
+        // .json is not in a children list
+        final Resource rsrc = provider.getResource(mock(ResolveContext.class), "/libs/foo/test", mock(ResourceContext.class), null);
+        List<String> rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
+
+        assertEquals(0, rsrcChildren.size());
+    }
+
+    @Test
+    public void testTreeWithoutDeepJSON() throws IOException {
         testTreeWithoutDeepJSON("");
         testTreeWithoutDeepJSON("/SLING-INF");
     }
@@ -178,13 +206,13 @@ public class BundleResourceProviderTest {
         addContent(bundle, prefix + "/libs/foo/test", "test");
         addContent(bundle, prefix + "/libs/foo/test/x", "X");
         addContent(bundle, prefix + "/libs/foo/test/y", "Y");
-        addContent(bundle, prefix + "/libs/foo/test/z.json", Collections.singletonMap(ResourceResolver.PROPERTY_RESOURCE_TYPE, (Object)"rtz"));
-        addContent(bundle, prefix + "/libs/foo/test.json", Collections.singletonMap("test", (Object)"foo"));
+        addContent(bundle, prefix + "/libs/foo/test/z.json", Collections.singletonMap(ResourceResolver.PROPERTY_RESOURCE_TYPE, (Object) "rtz"));
+        addContent(bundle, prefix + "/libs/foo/test.json", Collections.singletonMap("test", (Object) "foo"));
 
         finishContent(bundle);
 
         final PathMapping path;
-        if ( prefix.length() == 0 ) {
+        if (prefix.length() == 0) {
             path = new PathMapping("/libs/foo", null, "json");
         } else {
             path = new PathMapping("/libs/foo", prefix + "/libs/foo", "json");
@@ -218,7 +246,8 @@ public class BundleResourceProviderTest {
         assertTrue(rsrcChildren.contains("/libs/foo/test/z"));
     }
 
-    @Test public void testTreeWithDeepJSON() throws IOException {
+    @Test
+    public void testTreeWithDeepJSON() throws IOException {
         testTreeWithDeepJSON("");
         testTreeWithDeepJSON("/SLING-INF");
     }
@@ -271,13 +300,13 @@ public class BundleResourceProviderTest {
         addContent(bundle, prefix + "/libs/foo/test", "test");
         addContent(bundle, prefix + "/libs/foo/test/x", "X");
         addContent(bundle, prefix + "/libs/foo/test/y", "Y");
-        addContent(bundle, prefix + "/libs/foo/test/z.json", Collections.singletonMap(ResourceResolver.PROPERTY_RESOURCE_TYPE, (Object)"rtz"));
-        addContent(bundle, prefix + "/libs/foo/test.json", Collections.singletonMap("test", (Object)"foo"));
+        addContent(bundle, prefix + "/libs/foo/test/z.json", Collections.singletonMap(ResourceResolver.PROPERTY_RESOURCE_TYPE, (Object) "rtz"));
+        addContent(bundle, prefix + "/libs/foo/test.json", Collections.singletonMap("test", (Object) "foo"));
 
         finishContent(bundle);
 
         final PathMapping path;
-        if ( prefix.length() == 0 ) {
+        if (prefix.length() == 0) {
             path = new PathMapping("/libs/foo", null, "json");
         } else {
             path = new PathMapping("/libs/foo", prefix + "/libs/foo", "json");

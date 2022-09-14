@@ -33,12 +33,16 @@ import org.osgi.framework.Bundle;
  */
 public class BundleResourceURLConnection extends URLConnection {
 
-    /** The bundle owning the resource underlying the URLConnection */
+    /**
+     * The bundle owning the resource underlying the URLConnection
+     */
     private final Bundle bundle;
 
     private final String bundlePath;
-    
-    /** The original URLConnection */
+
+    /**
+     * The original URLConnection
+     */
     private URLConnection delegatee;
 
     protected BundleResourceURLConnection(Bundle bundle, String bundlePath, URL url) {
@@ -57,7 +61,7 @@ public class BundleResourceURLConnection extends URLConnection {
             URL url = bundle.getEntry(bundlePath);
             if (url == null) {
                 throw new IOException("Cannot find entry " + bundlePath
-                    + " in bundle " + bundle + " for URL " + url);
+                        + " in bundle " + bundle + " for URL " + url);
             }
 
             delegatee = url.openConnection();
@@ -66,7 +70,9 @@ public class BundleResourceURLConnection extends URLConnection {
         }
     }
 
-    /** Returns the input stream of the Bundle provided URLConnection */
+    /**
+     * Returns the input stream of the Bundle provided URLConnection
+     */
     @Override
     public InputStream getInputStream() throws IOException {
         connect();
@@ -74,7 +80,9 @@ public class BundleResourceURLConnection extends URLConnection {
         return delegatee.getInputStream();
     }
 
-    /** Returns the content length of the Bundle provided URLConnection */
+    /**
+     * Returns the content length of the Bundle provided URLConnection
+     */
     @Override
     public int getContentLength() {
         try {
@@ -100,7 +108,9 @@ public class BundleResourceURLConnection extends URLConnection {
         return bundle.getLastModified();
     }
 
-    /** Returns the content type of the Bundle provided URLConnection */
+    /**
+     * Returns the content type of the Bundle provided URLConnection
+     */
     public String getContentType() {
         try {
             connect();

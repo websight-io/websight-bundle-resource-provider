@@ -75,7 +75,8 @@ public class BundleResourceTest {
         when(cache.getEntry(path)).thenReturn(url);
     }
 
-    @Test public void testFileResource() throws MalformedURLException {
+    @Test
+    public void testFileResource() throws MalformedURLException {
         final BundleResourceCache cache = getBundleResourceCache();
         when(cache.getEntry("/libs/foo/test.json")).thenReturn(new URL("file:/libs/foo/test.json"));
         final BundleResource rsrc = new BundleResource(null, cache,
@@ -86,9 +87,10 @@ public class BundleResourceTest {
         assertNull(vm.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class));
     }
 
-    @Test public void testJSONResource() throws IOException {
+    @Test
+    public void testJSONResource() throws IOException {
         final BundleResourceCache cache = getBundleResourceCache();
-        addContent(cache, "/libs/foo/test.json", Collections.singletonMap("test", (Object)"foo"));
+        addContent(cache, "/libs/foo/test.json", Collections.singletonMap("test", (Object) "foo"));
         final BundleResource rsrc = new BundleResource(null, cache,
                 new PathMapping("/libs/foo", null, "json"), "/libs/foo/test", null, false);
         assertEquals(JcrConstants.NT_FILE, rsrc.getResourceType());
@@ -100,12 +102,13 @@ public class BundleResourceTest {
 
     /**
      * SLING-10140 - Verify that when the resourceRoot is a mapped file, that the sibling entry with the
-     *  JSONPropertiesExtension is loaded
+     * JSONPropertiesExtension is loaded
      */
-    @Test public void testJSONResourceForMappedFile() throws IOException {
+    @Test
+    public void testJSONResourceForMappedFile() throws IOException {
         final BundleResourceCache cache = getBundleResourceCache();
         addContent(cache, "/SLING_INF/libs/foo/test.txt", "Hello Text");
-        addContent(cache, "/SLING-INF/libs/foo/test.txt.json", Collections.singletonMap("test", (Object)"foo"));
+        addContent(cache, "/SLING-INF/libs/foo/test.txt.json", Collections.singletonMap("test", (Object) "foo"));
         final BundleResource rsrc = new BundleResource(null, cache,
                 new PathMapping("/libs/foo/test.txt", "/SLING-INF/libs/foo/test.txt", "json"), "/libs/foo/test.txt", null, false);
         assertEquals(JcrConstants.NT_FILE, rsrc.getResourceType());
@@ -115,9 +118,10 @@ public class BundleResourceTest {
         assertEquals("foo", vm.get("test", String.class));
     }
 
-    @Test public void testDefaultJSONResource() throws IOException {
+    @Test
+    public void testDefaultJSONResource() throws IOException {
         final BundleResourceCache cache = getBundleResourceCache();
-        addContent(cache, "/libs/foo/test/.json", Collections.singletonMap("test", (Object)"foo"));
+        addContent(cache, "/libs/foo/test/.json", Collections.singletonMap("test", (Object) "foo"));
         final BundleResource rsrc = new BundleResource(null, cache,
                 new PathMapping("/libs/foo", null, "json"), "/libs/foo/test", null, true);
         assertEquals(JcrConstants.NT_FOLDER, rsrc.getResourceType());
@@ -127,15 +131,17 @@ public class BundleResourceTest {
         assertEquals("foo", vm.get("test", String.class));
     }
 
-    @Test public void testSkipSettingResourceTypeForFile() {
+    @Test
+    public void testSkipSettingResourceTypeForFile() {
         testSkipSettingResourceType(false, JcrConstants.NT_FILE, getBundleResourceCache());
     }
 
-    @Test public void testSkipSettingResourceTypeForFolder() {
+    @Test
+    public void testSkipSettingResourceTypeForFolder() {
         testSkipSettingResourceType(true, JcrConstants.NT_FOLDER, getBundleResourceCache());
     }
 
-    private static void testSkipSettingResourceType(final boolean isFolder,final String resourceType, final BundleResourceCache cache) {
+    private static void testSkipSettingResourceType(final boolean isFolder, final String resourceType, final BundleResourceCache cache) {
         final BundleResource rsrc = new BundleResource(null, cache,
                 PathMapping.create("/", "json"), "/libs/foo/test.txt", null, isFolder);
         final ValueMap vm = rsrc.getValueMap();

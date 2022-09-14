@@ -67,7 +67,7 @@ class BundleResourceCache {
      * a given path to prevent looking for non-existing bundle entries multiple
      * times (value is an empty list).
      */
-    private static final List<String> NOT_FOUND_CHILDREN = Collections.<String> emptyList();
+    private static final List<String> NOT_FOUND_CHILDREN = Collections.<String>emptyList();
 
     /**
      * Single entry cache. This is a synchronized map with a size limit.
@@ -107,9 +107,9 @@ class BundleResourceCache {
 
         // create the limited maps wrapping in synchronized maps
         this.cache = Collections.synchronizedMap(new BundleResourceMap<URL>(
-            CACHE_SIZE));
+                CACHE_SIZE));
         this.listCache = Collections.synchronizedMap(new BundleResourceMap<List<String>>(
-            LIST_CACHE_SIZE));
+                LIST_CACHE_SIZE));
     }
 
     /**
@@ -129,7 +129,7 @@ class BundleResourceCache {
      *
      * @param path The path to the bundle entry to return
      * @return The URL to access the bundle entry or <code>null</code> if the
-     *         bundle does not contain the request entry.
+     * bundle does not contain the request entry.
      */
     URL getEntry(String path) {
         URL url = cache.get(path);
@@ -156,10 +156,10 @@ class BundleResourceCache {
      * <code>Enumeration</code> of strings.
      *
      * @param path The path to the parent entry whose child entries are to
-     *            be returned.
+     *             be returned.
      * @return An <code>Iterator<String></code> providing the paths of
-     *         entries considered direct children of the <code>parentPath</code>
-     *         or <code>null</code> if the parent entry does not exist.
+     * entries considered direct children of the <code>parentPath</code>
+     * or <code>null</code> if the parent entry does not exist.
      */
     List<String> getEntryPaths(String path) {
         List<String> list = listCache.get(path);
@@ -246,8 +246,8 @@ class BundleResourceCache {
          * Creates a new instance of this size limited map.
          *
          * @param limit The maximum number of entries in this map. If this value
-         *            is less than or equal to zero, the default size of
-         *            {@link #DEFAULT_LIMIT} is used.
+         *              is less than or equal to zero, the default size of
+         *              {@link #DEFAULT_LIMIT} is used.
          */
         BundleResourceMap(int limit) {
             // deliberately chosen initial size and load factor, but

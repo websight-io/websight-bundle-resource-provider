@@ -109,7 +109,10 @@ class BundleResourceIterator implements Iterator<Resource> {
         final Iterator<String> iter = bundleEntries.iterator();
         while (iter.hasNext()) {
             final String path = iter.next();
-            if (path.endsWith(this.mappedPath.getJSONPropertiesExtension())) {
+            if (path.endsWith("/" + this.mappedPath.getJSONPropertiesExtension())) {
+                // In-place properties definition (like .content.json). It's not a child.
+                iter.remove();
+            } else if (path.endsWith(this.mappedPath.getJSONPropertiesExtension())) {
                 iter.remove();
                 add.add(path.substring(0, path.length() - this.mappedPath.getJSONPropertiesExtension().length()));
             }
