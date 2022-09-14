@@ -26,7 +26,8 @@ import org.junit.Test;
 
 public class PathMappingTest {
 
-    @Test public void testSimpleRoot() {
+    @Test
+    public void testSimpleRoot() {
         final PathMapping[] paths = PathMapping.getRoots("/libs/foo");
         assertEquals(1, paths.length);
         assertNull(paths[0].getEntryRoot());
@@ -36,12 +37,14 @@ public class PathMappingTest {
         assertNotNull(paths[0].getJSONPropertiesExtension());
     }
 
-    @Test public void testDefaultPropJSON() {
+    @Test
+    public void testDefaultPropJSON() {
         final PathMapping[] paths = PathMapping.getRoots("/libs/foo");
         assertEquals(PathMapping.DEFAULT_JSON_DIR, paths[0].getJSONPropertiesExtension());
     }
 
-    @Test public void testSimpleRootWithJSON() {
+    @Test
+    public void testSimpleRootWithJSON() {
         final PathMapping[] paths = PathMapping.getRoots("/libs/foo;" + PathMapping.DIR_JSON + ":=json");
         assertEquals(1, paths.length);
         assertNull(paths[0].getEntryRoot());

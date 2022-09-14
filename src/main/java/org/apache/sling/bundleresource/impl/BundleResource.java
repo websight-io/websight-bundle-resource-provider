@@ -46,10 +46,14 @@ import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** A Resource that wraps a Bundle entry */
+/**
+ * A Resource that wraps a Bundle entry
+ */
 public class BundleResource extends AbstractResource {
 
-    /** default log */
+    /**
+     * default log
+     */
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final ResourceResolver resourceResolver;
@@ -72,11 +76,11 @@ public class BundleResource extends AbstractResource {
 
     @SuppressWarnings("unchecked")
     public BundleResource(final ResourceResolver resourceResolver,
-            final BundleResourceCache cache,
-            final PathMapping mappedPath,
-            final String resourcePath,
-            final Map<String, Object> readProps,
-            final boolean isFolder) {
+                          final BundleResourceCache cache,
+                          final PathMapping mappedPath,
+                          final String resourcePath,
+                          final Map<String, Object> readProps,
+                          final boolean isFolder) {
 
         this.resourceResolver = resourceResolver;
         this.cache = cache;
@@ -92,10 +96,10 @@ public class BundleResource extends AbstractResource {
 
         final Map<String, Object> properties = new HashMap<>();
         this.valueMap = new ValueMapDecorator(Collections.unmodifiableMap(properties));
-        if ( !isFolder ) {
+        if (!isFolder) {
             try {
                 final URL url = this.cache.getEntry(mappedPath.getEntryPath(resourcePath));
-                if ( url != null ) {
+                if (url != null) {
                     metadata.setContentLength(url.openConnection().getContentLength());
                 }
             } catch (final Exception e) {
@@ -104,13 +108,13 @@ public class BundleResource extends AbstractResource {
         }
 
         Map<String, Map<String, Object>> children = null;
-        if ( readProps != null ) {
-            for(final Map.Entry<String, Object> entry : readProps.entrySet()) {
-                if ( entry.getValue() instanceof Map ) {
-                    if ( children == null ) {
+        if (readProps != null) {
+            for (final Map.Entry<String, Object> entry : readProps.entrySet()) {
+                if (entry.getValue() instanceof Map) {
+                    if (children == null) {
                         children = new HashMap<>();
                     }
-                    children.put(entry.getKey(), (Map<String, Object>)entry.getValue());
+                    children.put(entry.getKey(), (Map<String, Object>) entry.getValue());
                 } else {
                     properties.put(entry.getKey(), entry.getValue());
                 }
@@ -129,7 +133,7 @@ public class BundleResource extends AbstractResource {
                 propsPath = entryPath.concat(this.mappedPath.getJSONPropertiesExtension());
             }
         }
-        if ( propsPath != null ) {
+        if (propsPath != null) {
             try {
                 URL url = this.cache.getEntry(propsPath);
                 if (url == null) {
@@ -174,14 +178,14 @@ public class BundleResource extends AbstractResource {
         Resource result = null;
         Map<String, Map<String, Object>> resources = this.subResources;
         String subPath = null;
-        for(String segment : path.split("/")) {
-            if ( resources != null ) {
+        for (String segment : path.split("/")) {
+            if (resources != null) {
                 subPath = subPath == null ? segment : subPath.concat("/").concat(segment);
                 final Map<String, Object> props = resources.get(segment);
-                if ( props != null ) {
+                if (props != null) {
                     result = new BundleResource(this.resourceResolver, this.cache, this.mappedPath,
                             this.getPath().concat("/").concat(subPath), props, false);
-                    resources = ((BundleResource)result).subResources;
+                    resources = ((BundleResource) result).subResources;
                 } else {
                     result = null;
                     break;
@@ -195,33 +199,40 @@ public class BundleResource extends AbstractResource {
     }
 
     private static Object getValue(final JsonValue value, final boolean topLevel) {
-        switch ( value.getValueType() ) {
+        switch (value.getValueType()) {
             // type NULL -> return null
-            case NULL : return null;
+            case NULL:
+                return null;
             // type TRUE or FALSE -> return boolean
-            case FALSE : return false;
-            case TRUE : return true;
+            case FALSE:
+                return false;
+            case TRUE:
+                return true;
             // type String -> return String
-            case STRING : return ((JsonString)value).getString();
+            case STRING:
+                return ((JsonString) value).getString();
             // type Number -> return long or double
-            case NUMBER : final JsonNumber num = (JsonNumber)value;
-                          if (num.isIntegral()) {
-                               return num.longValue();
-                          }
-                          return num.doubleValue();
+            case NUMBER:
+                final JsonNumber num = (JsonNumber) value;
+                if (num.isIntegral()) {
+                    return num.longValue();
+                }
+                return num.doubleValue();
             // type ARRAY -> return list and call this method for each value
-            case ARRAY : final List<Object> array = new ArrayList<>();
-                         for(final JsonValue x : ((JsonArray)value)) {
-                             array.add(getValue(x, false));
-                         }
-                         return array;
+            case ARRAY:
+                final List<Object> array = new ArrayList<>();
+                for (final JsonValue x : ((JsonArray) value)) {
+                    array.add(getValue(x, false));
+                }
+                return array;
             // type OBJECT -> return map
-            case OBJECT : final Map<String, Object> map = new HashMap<>();
-                          final JsonObject obj = (JsonObject)value;
-                          for(final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                              map.put(entry.getKey(), getValue(entry.getValue(), false));
-                          }
-                          return map;
+            case OBJECT:
+                final Map<String, Object> map = new HashMap<>();
+                final JsonObject obj = (JsonObject) value;
+                for (final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
+                    map.put(entry.getKey(), getValue(entry.getValue(), false));
+                }
+                return map;
         }
         return null;
     }
@@ -238,7 +249,7 @@ public class BundleResource extends AbstractResource {
     @Override
     public String getResourceType() {
         String resourceType = this.valueMap.get(ResourceResolver.PROPERTY_RESOURCE_TYPE, String.class);
-        if ( resourceType == null ) {
+        if (resourceType == null) {
             resourceType = this.isFolder ? NT_FOLDER : NT_FILE;
         }
         return resourceType;
@@ -307,11 +318,11 @@ public class BundleResource extends AbstractResource {
     private URL getURL() {
         if (resourceUrl == null) {
             final URL url = this.cache.getEntry(mappedPath.getEntryPath(this.path));
-            if ( url != null ) {
+            if (url != null) {
                 try {
                     resourceUrl = new URL(BundleResourceURLStreamHandler.PROTOCOL, null,
                             -1, path, new BundleResourceURLStreamHandler(
-                                    cache.getBundle(), mappedPath.getEntryPath(path)));
+                            cache.getBundle(), mappedPath.getEntryPath(path)));
                 } catch (MalformedURLException mue) {
                     log.error("getURL: Cannot get URL for " + this, mue);
                 }

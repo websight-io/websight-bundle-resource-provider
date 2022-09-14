@@ -44,7 +44,7 @@ class PathMapping {
         for (final ManifestHeader.Entry entry : header.getEntries()) {
             final String resourceRoot = entry.getValue();
             final String pathDirective = entry.getDirectiveValue(DIR_PATH);
-            final String expandDirective =  entry.getDirectiveValue(DIR_JSON);
+            final String expandDirective = entry.getDirectiveValue(DIR_JSON);
             if (pathDirective != null) {
                 prefixList.add(new PathMapping(resourceRoot, pathDirective, expandDirective));
             } else {
@@ -56,7 +56,7 @@ class PathMapping {
 
 
     static PathMapping create(final String configPath,
-            final String expandDirective) {
+                              final String expandDirective) {
         String resourceRoot;
         String entryRoot;
         int prefixSep = configPath.indexOf(prefixSeparatorChar);
@@ -71,14 +71,14 @@ class PathMapping {
     }
 
     PathMapping(final String resourceRoot,
-            final String entryRoot,
-            final String expandDirective) {
+                final String entryRoot,
+                final String expandDirective) {
         this.resourceRoot = ensureNoTrailingSlash(resourceRoot);
         this.resourceRootPrefix = ensureTrailingSlash(resourceRoot);
         this.entryRoot = ensureLeadingSlash(ensureNoTrailingSlash(entryRoot));
         this.entryRootPrefix = ensureLeadingSlash(ensureTrailingSlash(entryRoot));
         if (expandDirective == null) {
-            this.jsonExpandExtension =  DEFAULT_JSON_DIR;
+            this.jsonExpandExtension = DEFAULT_JSON_DIR;
         } else {
             this.jsonExpandExtension = ensureLeadingDot(expandDirective);
         }
@@ -90,7 +90,7 @@ class PathMapping {
 
     boolean isChild(final String resourcePath) {
         return resourcePath.startsWith(resourceRootPrefix)
-            || resourcePath.equals(resourceRoot);
+                || resourcePath.equals(resourceRoot);
     }
 
     String getEntryPath(final String resourcePath) {
@@ -108,12 +108,12 @@ class PathMapping {
     }
 
     String getResourcePath(final String entryPath) {
-        if ( entryRootPrefix == null ) {
+        if (entryRootPrefix == null) {
             return entryPath;
         }
-        if ( entryPath.startsWith(entryRootPrefix) ) {
+        if (entryPath.startsWith(entryRootPrefix)) {
             return resourceRootPrefix.concat(entryPath.substring(entryRootPrefix.length()));
-        } else if ( entryPath.equals(entryRoot)) {
+        } else if (entryPath.equals(entryRoot)) {
             return resourceRoot;
         }
         return null;

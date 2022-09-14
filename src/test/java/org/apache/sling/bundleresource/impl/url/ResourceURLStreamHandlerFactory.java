@@ -25,6 +25,7 @@ import java.net.URLStreamHandlerFactory;
 public class ResourceURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     private static volatile boolean init = false;
+
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if ("resource".equals(protocol)) {
@@ -35,7 +36,7 @@ public class ResourceURLStreamHandlerFactory implements URLStreamHandlerFactory 
     }
 
     public static void init() {
-        if ( !init ) {
+        if (!init) {
             URL.setURLStreamHandlerFactory(new ResourceURLStreamHandlerFactory());
             init = true;
         }
