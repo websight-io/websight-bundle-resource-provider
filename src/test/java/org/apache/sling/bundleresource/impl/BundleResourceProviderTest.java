@@ -188,7 +188,7 @@ public class BundleResourceProviderTest {
         final Resource rsrc = provider.getResource(mock(ResolveContext.class), "/libs/foo/test", mock(ResourceContext.class), null);
         List<String> rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), rsrc));
 
-        assertEquals(1, rsrcChildren.size());
+        assertEquals(0, rsrcChildren.size());
     }
 
     @Test
