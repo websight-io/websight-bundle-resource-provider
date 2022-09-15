@@ -367,4 +367,59 @@ public class BundleResourceProviderTest {
         assertNotNull(rsrc);
         assertEquals("g2", rsrc.getValueMap().get("name", String.class));
     }
+
+    @Test
+    public void testJsonPropertiesOrder() throws IOException {
+        final StringWriter writer = new StringWriter();
+        final JsonGenerator g = Json.createGenerator(writer);
+        g.writeStartObject();
+        g.write("1", "1");
+        g.write("2", "2");
+        g.write("3", "3");
+        g.write("4", "4");
+        g.writeEnd();
+        g.close();
+
+        final Bundle bundle = getBundle();
+        addContent(bundle, "/libs/foo/d.json", writer.toString());
+        final PathMapping path = new PathMapping("/libs/foo", null, "json");
+        final BundleResourceProvider provider = new BundleResourceProvider(new BundleResourceCache(bundle), path);
+        finishContent(bundle);
+
+        Resource resource = provider.getResource(mock(ResolveContext.class), "/libs/foo/d", mock(ResourceContext.class), null);
+        Iterator<String> iterator = resource.getValueMap().keySet().iterator();
+        assertEquals("1", iterator.next());
+        assertEquals("2", iterator.next());
+        assertEquals("3", iterator.next());
+        assertEquals("4", iterator.next());
+    }
+
+    @Test
+    public void testJsonChildrenOrder() throws IOException {
+        final StringWriter writer = new StringWriter();
+        final JsonGenerator g = Json.createGenerator(writer);
+        g.writeStartObject();
+        for (int i = 0; i < 10; i++) {
+            String iString = i + "";
+            g.writeStartObject(iString);
+            g.write("number", iString);
+            g.writeEnd();
+        }
+        g.writeEnd();
+        g.close();
+
+        final Bundle bundle = getBundle();
+        addContent(bundle, "/libs/foo/d.json", writer.toString());
+        final PathMapping path = new PathMapping("/libs/foo", null, "json");
+        final BundleResourceProvider provider = new BundleResourceProvider(new BundleResourceCache(bundle), path);
+        finishContent(bundle);
+
+        Resource resource = provider.getResource(mock(ResolveContext.class), "/libs/foo/d", mock(ResourceContext.class), null);
+        List<String> rsrcChildren = getChildren(provider.listChildren(mock(ResolveContext.class), resource));
+
+        for (int i = 0; i < 10; i++) {
+            assertEquals("/libs/foo/d/" + i, rsrcChildren.get(i));
+
+        }
+    }
 }

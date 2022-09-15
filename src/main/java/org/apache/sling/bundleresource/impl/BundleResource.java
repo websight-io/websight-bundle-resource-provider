@@ -25,7 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,7 +94,7 @@ public class BundleResource extends AbstractResource {
 
         this.path = resourcePath;
 
-        final Map<String, Object> properties = new HashMap<>();
+        final Map<String, Object> properties = new LinkedHashMap<>();
         this.valueMap = new ValueMapDecorator(Collections.unmodifiableMap(properties));
         if (!isFolder) {
             try {
@@ -112,7 +112,7 @@ public class BundleResource extends AbstractResource {
             for (final Map.Entry<String, Object> entry : readProps.entrySet()) {
                 if (entry.getValue() instanceof Map) {
                     if (children == null) {
-                        children = new HashMap<>();
+                        children = new LinkedHashMap<>();
                     }
                     children.put(entry.getKey(), (Map<String, Object>) entry.getValue());
                 } else {
@@ -143,11 +143,11 @@ public class BundleResource extends AbstractResource {
                     try (JsonReader reader = Json.createReader(url.openStream())) {
                         final JsonObject obj = reader.readObject();
                         for (final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                            final Object value = getValue(entry.getValue(), true);
+                            final Object value = getValue(entry.getValue());
                             if (value != null) {
                                 if (value instanceof Map) {
                                     if (children == null) {
-                                        children = new HashMap<>();
+                                        children = new LinkedHashMap<>();
                                     }
                                     children.put(entry.getKey(), (Map<String, Object>) value);
                                 } else {
@@ -198,7 +198,7 @@ public class BundleResource extends AbstractResource {
         return result;
     }
 
-    private static Object getValue(final JsonValue value, final boolean topLevel) {
+    private static Object getValue(final JsonValue value) {
         switch (value.getValueType()) {
             // type NULL -> return null
             case NULL:
@@ -222,15 +222,15 @@ public class BundleResource extends AbstractResource {
             case ARRAY:
                 final List<Object> array = new ArrayList<>();
                 for (final JsonValue x : ((JsonArray) value)) {
-                    array.add(getValue(x, false));
+                    array.add(getValue(x));
                 }
                 return array;
             // type OBJECT -> return map
             case OBJECT:
-                final Map<String, Object> map = new HashMap<>();
+                final Map<String, Object> map = new LinkedHashMap<>();
                 final JsonObject obj = (JsonObject) value;
                 for (final Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                    map.put(entry.getKey(), getValue(entry.getValue(), false));
+                    map.put(entry.getKey(), getValue(entry.getValue()));
                 }
                 return map;
         }

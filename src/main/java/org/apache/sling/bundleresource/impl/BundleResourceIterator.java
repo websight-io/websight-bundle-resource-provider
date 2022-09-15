@@ -18,13 +18,12 @@
  */
 package org.apache.sling.bundleresource.impl;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -96,7 +95,7 @@ class BundleResourceIterator implements Iterator<Resource> {
 
         this.resourceResolver = resourceResolver;
         this.cache = bundle;
-        this.subResources = subResources != null ? new HashMap<>(subResources) : null;
+        this.subResources = subResources != null ? new LinkedHashMap<>(subResources) : null;
         this.mappedPath = mappedPath;
         this.entries = getFilteredEntries(parentEntryPath);
 
@@ -104,8 +103,8 @@ class BundleResourceIterator implements Iterator<Resource> {
     }
 
     private Iterator<String> getFilteredEntries(final String parentEntryPath) {
-        final Set<String> bundleEntries = new TreeSet<>(cache.getEntryPaths(parentEntryPath));
-        final Set<String> add = new HashSet<>();
+        final Set<String> bundleEntries = new LinkedHashSet<>(cache.getEntryPaths(parentEntryPath));
+        final Set<String> add = new LinkedHashSet<>();
         final Iterator<String> iter = bundleEntries.iterator();
         while (iter.hasNext()) {
             final String path = iter.next();
