@@ -1,37 +1,39 @@
 definitions:
   steps:
-    - step: &configure-aws-token
-        name: 'Release: configure AWS token'
-        image: atlassian/pipelines-awscli:1.21.7
-        script:
-          - export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain websight --domain-owner 299371835903 --query authorizationToken --output text`
-          - echo export CODEARTIFACT_AUTH_TOKEN=$CODEARTIFACT_AUTH_TOKEN > _aws_token.sh
-        artifacts:
-          - _aws_token.sh
     - step: &verify
         name: 'Verify'
         image: maven:3.8.6-jdk-8
         caches:
           - maven
         script:
-          - mvn -B verify
-          - mvn -B -DdryRun=true release:prepare
+          - mkdir .maven
+          - curl -s https://s3.eu-central-1.amazonaws.com/repo.websight.io/settings-websight-public.xml --output .maven/settings-websight-public.xml
+          - mvn -B -s .maven/settings-websight-public.xml -DdryRun=true release:prepare
+    - step: &configure-aws-token
+        name: 'Release: Configure AWS token'
+        image: atlassian/pipelines-awscli:1.21.7
+        script:
+          - export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain websight --domain-owner 299371835903 --query authorizationToken --output text`
+          - echo export CODEARTIFACT_AUTH_TOKEN=$CODEARTIFACT_AUTH_TOKEN > _aws_token.sh
+        artifacts:
+          - _aws_token.sh
     - step: &release
         name: 'Release: deploy to AWS Code Artifact and S3'
-        image: maven:3.8.6-jdk-8
+        image: maven:3.8.5-openjdk-17
         caches:
           - maven
         script:
           - source _aws_token.sh
           - mkdir .maven
+          - curl -s https://s3.eu-central-1.amazonaws.com/repo.websight.io/settings-websight-public.xml --output .maven/settings-websight-public.xml
           - curl -s https://ws-dev-public.s3.eu-central-1.amazonaws.com/settings-code-artifact-deploy.xml --output .maven/settings-code-artifact-deploy.xml
           - curl -s https://ws-dev-public.s3.eu-central-1.amazonaws.com/settings-s3-publication.xml --output .maven/settings-s3-publication.xml
           - git config --global user.email "bitbucket@ds.pl"
           - git config --global user.name "BitBucket CI"
-          - mvn -B release:prepare
-          - RELEASED_VERSION=$(git describe --tags --abbrev=0)
+          - mvn -B -s .maven/settings-websight-public.xml release:prepare
+          - CURRENT_VERSION=$(git describe --tags --abbrev=0)
           - mvn -s .maven/settings-code-artifact-deploy.xml -P code-artifact-distribution release:perform
-          - git checkout tags/${RELEASED_VERSION}
+          - git checkout tags/${CURRENT_VERSION}
           - mvn -s .maven/settings-s3-publication.xml -P s3-distribution -Dmaven.install.skip=true -DskipTests=true deploy
 
 options:
@@ -42,7 +44,7 @@ pipelines:
     '**':
       - step: *verify
   branches:
-    master:
+    main:
       - step: *verify
       - step:
           <<: *configure-aws-token
