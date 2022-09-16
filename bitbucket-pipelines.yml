@@ -2,7 +2,7 @@ definitions:
   steps:
     - step: &verify
         name: 'Verify'
-        image: maven:3.8.5-openjdk-17
+        image: maven:3.8.6-jdk-8
         caches:
           - maven
         script:
