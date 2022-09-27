@@ -34,24 +34,22 @@ import org.slf4j.LoggerFactory;
 @Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
 public class Activator implements BundleActivator, BundleListener {
 
+
     /**
      * The name of the bundle manifest header listing the resource provider root
      * paths provided by the bundle (value is "Sling-Bundle-Resources").
      */
     public static final String BUNDLE_RESOURCE_ROOTS = "Sling-Bundle-Resources";
 
-    /**
-     * default log
-     */
     private final Logger log = LoggerFactory.getLogger(getClass());
-
     private final Map<Long, BundleResourceProvider[]> bundleResourceProviderMap = new HashMap<>();
+    private final ResourceChangeEventsEmitter emitter = new ResourceChangeEventsEmitter();
 
     /**
      * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
      */
     @Override
-    public void start(final BundleContext context) throws Exception {
+    public void start(final BundleContext context) {
         context.addBundleListener(this);
 
         final Bundle[] bundles = context.getBundles();
@@ -69,14 +67,15 @@ public class Activator implements BundleActivator, BundleListener {
      * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
      */
     @Override
-    public void stop(final BundleContext context) throws Exception {
+    public void stop(final BundleContext context) {
         BundleResourceWebConsolePlugin.destroyPlugin();
 
         context.removeBundleListener(this);
         for (final BundleResourceProvider[] providers : this.bundleResourceProviderMap.values()) {
-            for (final BundleResourceProvider p : providers) {
+            for (final BundleResourceProvider provider : providers) {
                 try {
-                    p.unregisterService();
+                    emitter.emitResourceRemovedEvents(provider);
+                    provider.unregisterService();
                 } catch (final IllegalStateException ise) {
                     // might happen on shutdown
                 }
@@ -95,16 +94,13 @@ public class Activator implements BundleActivator, BundleListener {
      */
     @Override
     public void bundleChanged(final BundleEvent event) {
-        switch (event.getType()) {
-            case BundleEvent.STARTED:
-                // register resource provider for the started bundle
-                addBundleResourceProvider(event.getBundle());
-                break;
-
-            case BundleEvent.STOPPED:
-                // remove resource provider after the bundle has stopped
-                removeBundleResourceProvider(event.getBundle());
-                break;
+        int type = event.getType();
+        if (type == BundleEvent.STARTED) {
+            // register resource provider for the started bundle
+            addBundleResourceProvider(event.getBundle());
+        } else if (type == BundleEvent.STOPPED) {
+            // remove resource provider after the bundle has stopped
+            removeBundleResourceProvider(event.getBundle());
         }
     }
 
@@ -131,9 +127,8 @@ public class Activator implements BundleActivator, BundleListener {
                     int index = 0;
                     final BundleResourceCache cache = new BundleResourceCache(bundle);
                     for (final PathMapping path : roots) {
-                        final BundleResourceProvider brp = new BundleResourceProvider(cache, path);
-                        providers[index] = brp;
-
+                        final BundleResourceProvider provider = new BundleResourceProvider(cache, path);
+                        providers[index] = provider;
                         index++;
                     }
                     bundleResourceProviderMap.put(bundle.getBundleId(), providers);
@@ -143,6 +138,7 @@ public class Activator implements BundleActivator, BundleListener {
                 for (final BundleResourceProvider provider : providers) {
                     final long id = provider.registerService();
                     log.debug("addBundleResourceProvider: Service ID = {}", id);
+                    emitter.emitResourceAddedEvents(provider);
                 }
             }
         } catch (final Exception ex) {
@@ -154,16 +150,17 @@ public class Activator implements BundleActivator, BundleListener {
     }
 
     private void removeBundleResourceProvider(final Bundle bundle) {
-        final BundleResourceProvider[] brp;
+        final BundleResourceProvider[] providers;
         synchronized (this) {
-            brp = bundleResourceProviderMap.remove(bundle.getBundleId());
+            providers = bundleResourceProviderMap.remove(bundle.getBundleId());
         }
-        if (brp != null) {
+        if (providers != null) {
             log.debug(
                     "removeBundleResourceProvider: Unregistering resources for bundle {}:{} ({})",
                     new Object[]{bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId()});
-            for (final BundleResourceProvider provider : brp) {
+            for (final BundleResourceProvider provider : providers) {
                 try {
+                    emitter.emitResourceRemovedEvents(provider);
                     provider.unregisterService();
                 } catch (final IllegalStateException ise) {
                     // might happen on shutdown
