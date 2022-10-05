@@ -116,10 +116,8 @@ public class Activator implements BundleActivator, BundleListener {
                 }
                 final String prefixes = bundle.getHeaders().get(BUNDLE_RESOURCE_ROOTS);
                 if (prefixes != null) {
-                    log.debug(
-                            "addBundleResourceProvider: Registering resources '{}' for bundle {}:{} ({}) as service ",
-                            new Object[]{prefixes, bundle.getSymbolicName(), bundle.getVersion(),
-                                    bundle.getBundleId()});
+                    log.debug("addBundleResourceProvider: Registering resources '{}' for bundle {}:{} ({}) as service ",
+                            prefixes, bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId());
 
                     final PathMapping[] roots = PathMapping.getRoots(prefixes);
                     providers = new BundleResourceProvider[roots.length];
@@ -138,14 +136,12 @@ public class Activator implements BundleActivator, BundleListener {
                 for (final BundleResourceProvider provider : providers) {
                     final long id = provider.registerService();
                     log.debug("addBundleResourceProvider: Service ID = {}", id);
-                    resourceProviderObserver.serviceAdded(provider);
+                    resourceProviderObserver.serviceAdded(bundle.getBundleContext(), provider, id);
                 }
             }
         } catch (final Exception ex) {
-            log.error(
-                    "activate: Problem while registering bundle resources for bundle "
-                            + bundle.getSymbolicName() + ":" + bundle.getVersion() + " (" + bundle.getBundleId() + ")",
-                    ex);
+            log.error("activate: Problem while registering bundle resources for bundle {} : {} ({})",
+                    bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId(), ex);
         }
     }
 
@@ -155,9 +151,8 @@ public class Activator implements BundleActivator, BundleListener {
             providers = bundleResourceProviderMap.remove(bundle.getBundleId());
         }
         if (providers != null) {
-            log.debug(
-                    "removeBundleResourceProvider: Unregistering resources for bundle {}:{} ({})",
-                    new Object[]{bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId()});
+            log.debug("removeBundleResourceProvider: Unregistering resources for bundle {}:{} ({})",
+                    bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId());
             for (final BundleResourceProvider provider : providers) {
                 try {
                     provider.unregisterService();

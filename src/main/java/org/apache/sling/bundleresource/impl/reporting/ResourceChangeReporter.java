@@ -20,27 +20,24 @@ public class ResourceChangeReporter {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    public void reportResourceRemovedChanges(BundleResourceProvider provider) {
-        reportResourceChanges(provider, ChangeType.REMOVED);
-    }
-
-    public void reportResourceAddedChanges(BundleResourceProvider provider) {
-        reportResourceChanges(provider, ChangeType.ADDED);
-    }
-
-    private void reportResourceChanges(BundleResourceProvider provider, ChangeType changeType) {
+    public void reportResourceChanges(BundleResourceProvider provider, ChangeType changeType, ObservationReporter fallbackReporter) {
         final String resourceRoot = provider.getMappedPath().getResourceRoot();
         final Resource root = provider.getResource(SimpleResolveContext.INSTANCE, resourceRoot, ResourceContext.EMPTY_CONTEXT, null);
         final ObservationReporter reporter = provider.getObservationReporter();
         if (reporter != null) {
-            reportChange(root, changeType, provider, reporter);
+            int counter = reportChange(root, changeType, provider, reporter);
+            log.info("Actual reporter reported: {} changes for {}", counter, resourceRoot);
+        } else if (fallbackReporter != null) {
+            int counter = reportChange(root, changeType, provider, fallbackReporter);
+            log.info("Fallback reporter reported {} changes for {}", counter, resourceRoot);
         } else {
-            log.debug("getObservationReporter is null");
+            log.warn("getObservationReporter is null and no fallback reporter is available for: {}", resourceRoot);
         }
     }
 
-    private void reportChange(final Resource root, final ChangeType changeType,
-                            final BundleResourceProvider provider, final ObservationReporter reporter) {
+    private int reportChange(final Resource root, final ChangeType changeType,
+                             final BundleResourceProvider provider, final ObservationReporter reporter) {
+        int counter = 0;
         if (log.isDebugEnabled()) {
             log.debug("Detected change for resource {} : {}", root.getPath(), changeType);
         }
@@ -53,19 +50,21 @@ public class ResourceChangeReporter {
                     .filter(change -> config.getChangeTypes().contains(change.getType()))
                     .collect(Collectors.toList());
             reporter.reportChanges(config, perConfigChanges, false);
+            counter += perConfigChanges.size();
             if (log.isDebugEnabled()) {
                 for (ResourceChange change : perConfigChanges)
                     log.debug("Send change for resource {}: {} to {}", change.getPath(), change.getType(), config);
             }
         }
+        return counter;
     }
 
     private void collectResourceChanges(final Resource resource, final ResourceChange.ChangeType changeType,
                                         BundleResourceProvider provider, List<ResourceChange> changes) {
         changes.add(new ResourceChange(changeType, resource.getPath(), false));
         Iterator<Resource> children = provider.listChildren(SimpleResolveContext.INSTANCE, resource);
-        children.forEachRemaining(child -> {
-            collectResourceChanges(child, changeType, provider, changes);
-        });
+        if (children != null) {
+            children.forEachRemaining(child -> collectResourceChanges(child, changeType, provider, changes));
+        }
     }
 }
