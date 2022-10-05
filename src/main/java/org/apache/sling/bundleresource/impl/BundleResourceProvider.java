@@ -50,7 +50,7 @@ public class BundleResourceProvider extends ResourceProvider<Object> {
         final Bundle bundle = this.cache.getBundle();
         final Dictionary<String, Object> props = new Hashtable<>();
         props.put(Constants.SERVICE_DESCRIPTION,
-                "Provider of bundle based resources from bundle " + String.valueOf(bundle.getBundleId()));
+                "Provider of bundle based resources from bundle " + bundle.getBundleId());
         props.put(Constants.SERVICE_VENDOR, "The Apache Software Foundation");
         props.put(ResourceProvider.PROPERTY_ROOT, this.root.getResourceRoot());
         props.put(PROP_BUNDLE, bundle.getBundleId());
@@ -177,7 +177,7 @@ public class BundleResourceProvider extends ResourceProvider<Object> {
         return cache;
     }
 
-    PathMapping getMappedPath() {
+    public PathMapping getMappedPath() {
         return root;
     }
 

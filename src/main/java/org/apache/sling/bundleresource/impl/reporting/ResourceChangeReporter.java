@@ -1,4 +1,4 @@
-package org.apache.sling.bundleresource.impl;
+package org.apache.sling.bundleresource.impl.reporting;
 
 import static org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
 
@@ -9,37 +9,37 @@ import java.util.stream.Collectors;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.observation.ResourceChange;
-import org.apache.sling.bundleresource.impl.event.SimpleResolveContext;
+import org.apache.sling.bundleresource.impl.BundleResourceProvider;
 import org.apache.sling.spi.resource.provider.ObservationReporter;
 import org.apache.sling.spi.resource.provider.ObserverConfiguration;
 import org.apache.sling.spi.resource.provider.ResourceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ResourceChangeEventsEmitter {
+public class ResourceChangeReporter {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    public void emitResourceRemovedEvents(BundleResourceProvider provider) {
-        emitResourceEvents(provider, ChangeType.REMOVED);
+    public void reportResourceRemovedChanges(BundleResourceProvider provider) {
+        reportResourceChanges(provider, ChangeType.REMOVED);
     }
 
-    public void emitResourceAddedEvents(BundleResourceProvider provider) {
-        emitResourceEvents(provider, ChangeType.ADDED);
+    public void reportResourceAddedChanges(BundleResourceProvider provider) {
+        reportResourceChanges(provider, ChangeType.ADDED);
     }
 
-    private void emitResourceEvents(BundleResourceProvider provider, ChangeType changeType) {
+    private void reportResourceChanges(BundleResourceProvider provider, ChangeType changeType) {
         final String resourceRoot = provider.getMappedPath().getResourceRoot();
         final Resource root = provider.getResource(SimpleResolveContext.INSTANCE, resourceRoot, ResourceContext.EMPTY_CONTEXT, null);
         final ObservationReporter reporter = provider.getObservationReporter();
         if (reporter != null) {
-            sendEvents(root, changeType, provider, reporter);
+            reportChange(root, changeType, provider, reporter);
         } else {
             log.debug("getObservationReporter is null");
         }
     }
 
-    private void sendEvents(final Resource root, final ChangeType changeType,
+    private void reportChange(final Resource root, final ChangeType changeType,
                             final BundleResourceProvider provider, final ObservationReporter reporter) {
         if (log.isDebugEnabled()) {
             log.debug("Detected change for resource {} : {}", root.getPath(), changeType);

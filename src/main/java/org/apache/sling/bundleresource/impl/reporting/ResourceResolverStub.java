@@ -1,4 +1,4 @@
-package org.apache.sling.bundleresource.impl.event;
+package org.apache.sling.bundleresource.impl.reporting;
 
 import java.util.Iterator;
 import java.util.Map;

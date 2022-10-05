@@ -21,6 +21,7 @@ package org.apache.sling.bundleresource.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.sling.bundleresource.impl.reporting.ResourceProviderObserver;
 import org.osgi.annotation.bundle.Header;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -43,7 +44,7 @@ public class Activator implements BundleActivator, BundleListener {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final Map<Long, BundleResourceProvider[]> bundleResourceProviderMap = new HashMap<>();
-    private final ResourceChangeEventsEmitter emitter = new ResourceChangeEventsEmitter();
+    private final ResourceProviderObserver resourceProviderObserver = new ResourceProviderObserver();
 
     /**
      * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
@@ -74,7 +75,6 @@ public class Activator implements BundleActivator, BundleListener {
         for (final BundleResourceProvider[] providers : this.bundleResourceProviderMap.values()) {
             for (final BundleResourceProvider provider : providers) {
                 try {
-                    emitter.emitResourceRemovedEvents(provider);
                     provider.unregisterService();
                 } catch (final IllegalStateException ise) {
                     // might happen on shutdown
@@ -138,7 +138,7 @@ public class Activator implements BundleActivator, BundleListener {
                 for (final BundleResourceProvider provider : providers) {
                     final long id = provider.registerService();
                     log.debug("addBundleResourceProvider: Service ID = {}", id);
-                    emitter.emitResourceAddedEvents(provider);
+                    resourceProviderObserver.serviceAdded(provider);
                 }
             }
         } catch (final Exception ex) {
@@ -160,7 +160,6 @@ public class Activator implements BundleActivator, BundleListener {
                     new Object[]{bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId()});
             for (final BundleResourceProvider provider : providers) {
                 try {
-                    emitter.emitResourceRemovedEvents(provider);
                     provider.unregisterService();
                 } catch (final IllegalStateException ise) {
                     // might happen on shutdown
