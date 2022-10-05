@@ -29,6 +29,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
+import org.osgi.framework.InvalidSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,15 +45,15 @@ public class Activator implements BundleActivator, BundleListener {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final Map<Long, BundleResourceProvider[]> bundleResourceProviderMap = new HashMap<>();
-    private final ResourceProviderObserver resourceProviderObserver = new ResourceProviderObserver();
+    private ResourceProviderObserver resourceProviderObserver;
 
     /**
      * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
      */
     @Override
-    public void start(final BundleContext context) {
+    public void start(final BundleContext context) throws InvalidSyntaxException {
         context.addBundleListener(this);
-
+        this.resourceProviderObserver = new ResourceProviderObserver(context);
         final Bundle[] bundles = context.getBundles();
         for (final Bundle bundle : bundles) {
             if (bundle.getState() == Bundle.ACTIVE) {
@@ -60,7 +61,6 @@ public class Activator implements BundleActivator, BundleListener {
                 addBundleResourceProvider(bundle);
             }
         }
-
         BundleResourceWebConsolePlugin.initPlugin(context);
     }
 
@@ -81,6 +81,7 @@ public class Activator implements BundleActivator, BundleListener {
                 }
             }
         }
+        this.resourceProviderObserver.close(context);
         this.bundleResourceProviderMap.clear();
     }
 
