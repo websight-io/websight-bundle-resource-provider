@@ -9,6 +9,7 @@ import org.apache.sling.bundleresource.impl.BundleResourceProvider;
 import org.apache.sling.spi.resource.provider.ObservationReporter;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
@@ -19,8 +20,9 @@ public class ResourceProviderObserver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceProviderObserver.class);
     private final ResourceChangeReporter reporter = new ResourceChangeReporter();
-    // List of observers registered by this bundle
+    // List of observers registered by this bundle, one per each providers
     private final List<FallbackReporterServiceListener> observers = new CopyOnWriteArrayList<>();
+    // Listen for the `ResourceChangeListener` changes to refresh the fallback reporter in each FallbackReporterServiceListeners
     private FallbackRefreshServiceListener refreshServiceListener;
 
     public ResourceProviderObserver(BundleContext bundleContext) throws InvalidSyntaxException {
@@ -34,14 +36,13 @@ public class ResourceProviderObserver {
     public void serviceAdded(BundleContext bundleContext, BundleResourceProvider provider, long serviceId) throws InvalidSyntaxException {
         // Notify system that the resources are added
         reporter.reportResourceChanges(provider, ResourceChange.ChangeType.ADDED, null);
-        LOGGER.debug("Reported resources added by the provider");
+        LOGGER.debug("Reported changes for resources added by the provider");
 
-        // Listen for the service de-registration to notify the system about removed resources
+        // Listen for the provider removal to notify the system about removed resources
         // Fallback reporter is stored and refreshed by the listener if the provider does not have valid reporter by itself
         // This is caused by the race condition caused by the fact, that we work on the bundle lifecycle events (STARTED/STOPPED)
-        FallbackReporterServiceListener observer = new FallbackReporterServiceListener(provider, reporter);
+        FallbackReporterServiceListener observer = new FallbackReporterServiceListener(observers, provider, reporter);
         bundleContext.addServiceListener(observer, "(" + Constants.SERVICE_ID + "=" + serviceId + ")");
-        observers.add(observer);
     }
 
     public void close(BundleContext bundleContext) {
@@ -68,24 +69,32 @@ public class ResourceProviderObserver {
         private ObservationReporter fallbackReporter;
         private final BundleResourceProvider provider;
         private final ResourceChangeReporter reporter;
+        private final List<FallbackReporterServiceListener> observers;
 
-        FallbackReporterServiceListener(BundleResourceProvider provider, ResourceChangeReporter reporter) {
-            this.fallbackReporter = provider.getObservationReporter();
+
+        FallbackReporterServiceListener(List<FallbackReporterServiceListener> observers, BundleResourceProvider provider, ResourceChangeReporter reporter) {
+            this.observers = observers;
             this.provider = provider;
             this.reporter = reporter;
+
+            this.fallbackReporter = provider.getObservationReporter();
+            observers.add(this);
         }
 
         @Override
         public void serviceChanged(ServiceEvent event) {
             if (ServiceEvent.UNREGISTERING == event.getType()) {
                 reporter.reportResourceChanges(provider, ResourceChange.ChangeType.REMOVED, fallbackReporter);
-                LOGGER.debug("Reported resources removed by the provider");
+                // Unregister listener and remove from the observers lis
+                FrameworkUtil.getBundle(this.getClass()).getBundleContext().removeServiceListener(this);
+                observers.remove(this);
+                LOGGER.debug("Reported changes for resources removed by the provider. Removed FallbackReporterServiceListener (self).");
             }
         }
 
         public void refreshFallback() {
             // Hopefully the provider is already updated
-            LOGGER.info("Refreshing fallback reporter for {}", provider.getMappedPath().getResourceRoot());
+            LOGGER.debug("Refreshing fallback reporter for {}", provider.getMappedPath().getResourceRoot());
             this.fallbackReporter = provider.getObservationReporter();
         }
     }

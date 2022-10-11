@@ -26,12 +26,12 @@ public class ResourceChangeReporter {
         final ObservationReporter reporter = provider.getObservationReporter();
         if (reporter != null) {
             int counter = reportChange(root, changeType, provider, reporter);
-            log.info("Actual reporter reported: {} changes for {}", counter, resourceRoot);
+            log.debug("Actual reporter reported: {} changes for {} [{}]", counter, resourceRoot, changeType);
         } else if (fallbackReporter != null) {
             int counter = reportChange(root, changeType, provider, fallbackReporter);
-            log.info("Fallback reporter reported {} changes for {}", counter, resourceRoot);
+            log.debug("Fallback reporter reported {} changes for {} [{}]", counter, resourceRoot, changeType);
         } else {
-            log.warn("getObservationReporter is null and no fallback reporter is available for: {}", resourceRoot);
+            log.warn("getObservationReporter is null and no fallback reporter is available for: {} [{}]", resourceRoot, changeType);
         }
     }
 
@@ -43,17 +43,20 @@ public class ResourceChangeReporter {
         }
 
         final List<ResourceChange> allChanges = new ArrayList<>();
+        collectResourceChanges(root, changeType, provider, allChanges);
+
         for (final ObserverConfiguration config : reporter.getObserverConfigurations()) {
-            collectResourceChanges(root, changeType, provider, allChanges);
             final List<ResourceChange> perConfigChanges = allChanges.stream()
                     .filter(change -> config.matches(change.getPath()))
                     .filter(change -> config.getChangeTypes().contains(change.getType()))
                     .collect(Collectors.toList());
+            log.debug("Processing config: {}", config);
             reporter.reportChanges(config, perConfigChanges, false);
             counter += perConfigChanges.size();
-            if (log.isDebugEnabled()) {
-                for (ResourceChange change : perConfigChanges)
-                    log.debug("Send change for resource {}: {} to {}", change.getPath(), change.getType(), config);
+            if (log.isTraceEnabled()) {
+                for (ResourceChange change : perConfigChanges) {
+                    log.trace("Send change for resource {}: {} to {}", change.getPath(), change.getType(), config);
+                }
             }
         }
         return counter;

@@ -112,12 +112,14 @@ public class Activator implements BundleActivator, BundleListener {
         try {
             synchronized (this) {
                 // on startup we might get here twice for a bundle (listener and activator)
+                log.debug("addBundleResourceProvider: Checking for providers from Bundle ID = {}", bundle.getBundleId());
                 if (bundleResourceProviderMap.get(bundle.getBundleId()) != null) {
+                    log.debug("addBundleResourceProvider: Already found providers from Bundle ID = {}", bundle.getBundleId());
                     return;
                 }
                 final String prefixes = bundle.getHeaders().get(BUNDLE_RESOURCE_ROOTS);
                 if (prefixes != null) {
-                    log.debug("addBundleResourceProvider: Registering resources '{}' for bundle {}:{} ({}) as service ",
+                    log.debug("addBundleResourceProvider: Registering resources '{}' from bundle {}:{} ({}) as service",
                             prefixes, bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId());
 
                     final PathMapping[] roots = PathMapping.getRoots(prefixes);
@@ -130,6 +132,7 @@ public class Activator implements BundleActivator, BundleListener {
                         providers[index] = provider;
                         index++;
                     }
+                    log.debug("addBundleResourceProvider: Added providers from Bundle ID = {}", bundle.getBundleId());
                     bundleResourceProviderMap.put(bundle.getBundleId(), providers);
                 }
             }
@@ -141,7 +144,7 @@ public class Activator implements BundleActivator, BundleListener {
                 }
             }
         } catch (final Exception ex) {
-            log.error("activate: Problem while registering bundle resources for bundle {} : {} ({})",
+            log.error("activate: Problem while registering bundle resources from bundle {} : {} ({})",
                     bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId(), ex);
         }
     }
@@ -149,10 +152,11 @@ public class Activator implements BundleActivator, BundleListener {
     private void removeBundleResourceProvider(final Bundle bundle) {
         final BundleResourceProvider[] providers;
         synchronized (this) {
+            log.debug("removeBundleResourceProvider: Removing providers from Bundle ID = {}", bundle.getBundleId());
             providers = bundleResourceProviderMap.remove(bundle.getBundleId());
         }
         if (providers != null) {
-            log.debug("removeBundleResourceProvider: Unregistering resources for bundle {}:{} ({})",
+            log.debug("removeBundleResourceProvider: Unregistering resources from bundle {}:{} ({})",
                     bundle.getSymbolicName(), bundle.getVersion(), bundle.getBundleId());
             for (final BundleResourceProvider provider : providers) {
                 try {
