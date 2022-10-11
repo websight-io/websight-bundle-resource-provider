@@ -66,6 +66,8 @@ Resource created by loading example JSON:
 ```
 will contain properties accessible using `Resource.getValueMap` in order `[property1, property2, property3]` and children accesible using `Resource.getChildren` in order `[resource1, resource2,resource3]`.
 
+##Resource Resolver Change Listener framework support.
+This implementations supports ResourceChangeListener events. Resources are ADDED or REMOVED on bundle start/stop. RESOURCE CHANGE EVENT is not supported.
 
 
 ##Default mapping definition values

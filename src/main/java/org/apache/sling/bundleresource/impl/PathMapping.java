@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.sling.commons.osgi.ManifestHeader;
 
-class PathMapping {
+public class PathMapping {
 
     public static final String DIR_PATH = "path";
     public static final String DIR_JSON = "propsJSON";
@@ -119,7 +119,7 @@ class PathMapping {
         return null;
     }
 
-    String getResourceRoot() {
+    public String getResourceRoot() {
         return resourceRoot;
     }
 
