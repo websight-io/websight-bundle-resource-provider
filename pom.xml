@@ -10,7 +10,7 @@
 
     <groupId>io.websight</groupId>
     <artifactId>io.websight.sling.bundleresource.impl</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1-SNAPSHOT</version>
 
     <name>WebSight.io fork of Apache Sling Bundle Resource Provider</name>
     <description>
@@ -27,7 +27,7 @@
         <connection>scm:git:ssh://git@bitbucket.org/teamds-workspace/sling-org-apache-sling-bundleresource-impl.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/teamds-workspace/sling-org-apache-sling-bundleresource-impl.git</developerConnection>
         <url>https://bitbucket.org/teamds-workspace/sling-org-apache-sling-bundleresource-impl.git</url>
-        <tag>v2.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
