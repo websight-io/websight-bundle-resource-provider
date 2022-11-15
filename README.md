@@ -60,8 +60,8 @@ Resource created by loading example JSON:
 "resource2": {},
 "resource3": {},
 "property1": 1,
-"property1": 2,
-"property1": 3
+"property2": 2,
+"property3": 3
 }
 ```
 will contain properties accessible using `Resource.getValueMap` in order `[property1, property2, property3]` and children accesible using `Resource.getChildren` in order `[resource1, resource2,resource3]`.
