@@ -43,7 +43,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
           role-session-name: WebsightBundleResourceProviderRelease
-          aws-region: us-east-1
+          aws-region: eu-central-1
       - name: Prepare release
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
