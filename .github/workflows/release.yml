@@ -15,10 +15,7 @@
 name: Release WebSight Bundle Resource Provider
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
       
 permissions:
   id-token: write
