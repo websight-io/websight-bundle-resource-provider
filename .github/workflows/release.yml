@@ -15,7 +15,10 @@
 name: Release WebSight Bundle Resource Provider
 
 on:
-  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
   
 jobs:
   release:
