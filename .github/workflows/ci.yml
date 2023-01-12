@@ -41,5 +41,4 @@ jobs:
       - name: Verify
         run: |
           mkdir .maven
-          curl -s https://s3.eu-central-1.amazonaws.com/repo.websight.io/settings-websight-public.xml --output .maven/settings-websight-public.xml
-          mvn -B -s .maven/settings-websight-public.xml -DdryRun=true release:prepare
+          mvn -B -DdryRun=true release:prepare
