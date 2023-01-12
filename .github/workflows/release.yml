@@ -1,0 +1,73 @@
+# Copyright (C) 2022 Dynamic Solutions
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Release WebSight Bundle Resource Provider
+
+on:
+  workflow_dispatch:
+      
+permissions:
+  id-token: write
+  contents: read
+  
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
+          role-session-name: WebsightBundleResourceProviderRelease
+          aws-region: eu-central-1
+      - name: Prepare release
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: |
+          git config --global user.email "github.actions@ds.pl"
+          git config --global user.name "GitHub Actions"
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_SECRET_KEY }}" > ~/.ssh/id_rsa
+          chmod 0600 ~/.ssh/id_rsa
+          ls -al ~/.ssh
+          mvn -B -DdryRun=true release:prepare
+          RELEASED_VERSION=$(git describe --tags --abbrev=0)
+          echo "RELEASED_VERSION=${RELEASED_VERSION}" >> $GITHUB_ENV
+      - name: Release to Code Artifact
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -s https://ws-dev-public.s3.eu-central-1.amazonaws.com/settings-code-artifact-deploy.xml --output ~/.m2/settings-code-artifact-deploy.xml
+          mvn --batch-mode -s ~/.m2/settings-code-artifact-deploy.xml -P code-artifact-distribution release:perform
+      - name: Deploy to S3
+        run: |
+          curl -s https://ws-dev-public.s3.eu-central-1.amazonaws.com/settings-s3-publication.xml --output ~/.m2/settings-s3-publication.xml
+          git checkout tags/${RELEASED_VERSION}
+          mvn --batch-mode -s ~/.m2/settings-s3-publication.xml -P s3-distribution -Dmaven.install.skip=true -DskipTests=true deploy
+      

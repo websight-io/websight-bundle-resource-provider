@@ -18,17 +18,39 @@
         based resources. Forked from 2.3.5-SNAPSHOT.
     </description>
 
+    <licenses>
+        <license>
+            <name>Apache License Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/websight-io/websight-bundle-resource-provider.git</connection>
+        <developerConnection>scm:git:git@github.com:websight-io/websight-bundle-resource-provider.git</developerConnection>
+        <url>https://github.com/websight-io/websight-bundle-resource-provider</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <organization>
+        <name>Dynamic Solutions sp. z o.o. sp. k.</name>
+        <url>https://websight.io</url>
+    </organization>
+
+    <repositories>
+        <repository>
+            <id>websight-repo</id>
+            <url>https://repo.websight.io/maven/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
-
-    <scm>
-        <connection>scm:git:ssh://git@bitbucket.org/teamds-workspace/sling-org-apache-sling-bundleresource-impl.git</connection>
-        <developerConnection>scm:git:ssh://git@bitbucket.org/teamds-workspace/sling-org-apache-sling-bundleresource-impl.git</developerConnection>
-        <url>https://bitbucket.org/teamds-workspace/sling-org-apache-sling-bundleresource-impl.git</url>
-        <tag>HEAD</tag>
-    </scm>
 
     <build>
         <plugins>
