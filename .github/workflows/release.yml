@@ -49,14 +49,13 @@ jobs:
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
-          curl -s https://s3.eu-central-1.amazonaws.com/repo.websight.io/settings-websight-public.xml --output ~/.m2/settings-websight-public.xml
           git config --global user.email "github.actions@ds.pl"
           git config --global user.name "GitHub Actions"
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.SSH_SECRET_KEY }}" > ~/.ssh/id_rsa
           chmod 0600 ~/.ssh/id_rsa
           ls -al ~/.ssh
-          mvn --batch-mode -s ~/.m2/settings-websight-public.xml release:prepare
+          mvn -B -DdryRun=true release:prepare
           RELEASED_VERSION=$(git describe --tags --abbrev=0)
           echo "RELEASED_VERSION=${RELEASED_VERSION}" >> $GITHUB_ENV
       - name: Release to Code Artifact
