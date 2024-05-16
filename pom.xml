@@ -32,6 +32,13 @@
         <tag>HEAD</tag>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://europe-west1-maven.pkg.dev/websight-io/websight-maven-releases</url>
+        </repository>
+    </distributionManagement>
+  
     <organization>
         <name>Dynamic Solutions sp. z o.o. sp. k.</name>
         <url>https://websight.io</url>
